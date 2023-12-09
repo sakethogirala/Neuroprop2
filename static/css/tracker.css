@@ -1,0 +1,28 @@
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.icon-form {
+    margin: 0; /* Adjust as necessary */
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    padding: 5 5px; /* Adjust the horizontal padding as needed */
+    margin: 0 2px; /* Adjust the margin for spacing between buttons */
+    font-size: 1.5rem;
+    color: inherit;
+    color: grey;
+}
+
+.icon-button:hover {
+    background: transparent; /* Optional: style for hover state */
+}
+
+.remove-user:hover{
+    text-decoration: line-through;
+    color: red;
+}

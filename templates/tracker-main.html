@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Document Tracker</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card widget-inline">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card rounded-0 shadow-none m-0">
+                                <div class="card-body text-center">
+                                    <i class="ri-briefcase-line text-muted font-24"></i>
+                                    <h3><span>{{ total }}</span></h3>
+                                    <p class="text-muted font-15 mb-0">Total Prospects</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card rounded-0 shadow-none m-0 border-start border-light">
+                                <div class="card-body text-center">
+                                    <i class="ri-list-check-2 text-muted font-24"></i>
+                                    <h3><span>715</span></h3>
+                                    <p class="text-muted font-15 mb-0">Total Tasks</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card rounded-0 shadow-none m-0 border-start border-light">
+                                <div class="card-body text-center">
+                                    <i class="ri-group-line text-muted font-24"></i>
+                                    <h3><span>X</span></h3>
+                                    <p class="text-muted font-15 mb-0">XXX XXX</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card rounded-0 shadow-none m-0 border-start border-light">
+                                <div class="card-body text-center">
+                                    <i class="ri-line-chart-line text-muted font-24"></i>
+                                    <h3><span>0</span></i></h3>
+                                    <p class="text-muted font-15 mb-0">Closed this Month</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> <!-- end row -->
+                </div>
+            </div> <!-- end card-box-->
+        </div> <!-- end col-->
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="header-title">Prospects</h4>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-success me-2"><i class="mdi mdi-plus me-1"></i> Create New</button>
+                    </div>
+                </div>
+
+                <div class="card-body pt-2">
+                    <div class="table-responsive">
+                        <table class="table table-centered mb-0">
+                            <thead class="">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>To Dos</th>
+                                    <th>Last Updated</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prospect in object_list %}
+                                <tr>
+
+                                    <td>{{ prospect.name }}</td>
+                                    <td>
+                                        <div class="badge badge-{{ prospect.get_progress_class }}-lighten mb-1">{{ prospect.get_status_display }}</div>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar progress-lg" role="progressbar" style="width: {{ prospect.get_document_progress_percentage }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td>{{ prospect.get_todo_count }}</td>
+                                    <td>{{ prospect.last_updated }} </td>
+                                    <td class="table-action">
+                                        <a href="{% url 'tracker-detail' prospect.pk %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                        <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!-- end table-responsive-->
+
+                </div> <!-- end card body-->
+            </div> <!-- end card -->
+        </div><!-- end col-->
+    </div>
+
+<!-- end row-->
+</div>
+
+{% endblock %}

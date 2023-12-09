@@ -1,0 +1,13 @@
+{% if score >= 7 %}
+<span class="badge badge-lg badge-success-lighten">
+    {{ score }}
+</span>
+{% elif score >= 4 and score <= 7 %}
+<span class="badge badge-lg badge-warning-lighten">
+    {{ score }}
+</span>
+{% elif score <= 4 %}
+<span class="badge badge-lg badge-danger-lighten">
+    {{ score }}
+</span>
+{% endif %}

@@ -1,0 +1,6 @@
+Hello {{user}},
+
+Please activate your Neuroprop account here: {{ link }}
+
+Thanks,
+Neuroprop

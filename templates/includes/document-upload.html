@@ -1,0 +1,39 @@
+{% load static %}
+
+{% block css %}
+<style>
+    .dropzones {
+        border: 2px dashed var(--ct-border-color);
+        background: var(--ct-input-bg-custom);
+        border-radius: 6px;
+        cursor: pointer;
+        min-height: 150px;
+        padding: 20px
+    }
+
+    .dropzones .dz-message {
+        text-align: center;
+        margin: 2rem 0
+    }
+
+    .dropzones.dz-started .dz-message {
+        display: none
+    }
+</style>
+{% endblock %}
+<!-- File Upload -->
+
+<form enctype="multipart/form-data" id="dropzone" action="{% url 'upload-document' %}" method="post" class="dropzone"
+    data-plugin="dropzone" data-previews-container="#file-previews"
+    data-upload-preview-template="#uploadPreviewTemplate">{% csrf_token %}
+    <input type="hidden" name="document_pk" value="{{ document.pk }}" id="">
+    <div class="fallback">
+        <input accept="application/pdf" name="document" type="file" />
+    </div>
+
+    <div class="dz-message needsclick">
+        <i class="h1 text-muted ri-upload-cloud-2-line"></i>
+        <h3>Drop file here or click to upload.</h3>
+
+    </div>
+</form>
