@@ -23,6 +23,7 @@ def get_access_token():
         json=payload,
         headers=headers
     )
+    print(response)
     access_token = response.json()["access_token"]
     return access_token
 
