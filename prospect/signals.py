@@ -3,14 +3,14 @@ from django.dispatch import receiver
 from .models import Prospect
 from . import PROSPECT
 from tracker import DOCUMENT
-from tracker.models import Document
+from tracker.models import DocumentType
 
 def create_files(instance, docs):
     for doc in docs:
-        new_doc = Document.objects.create(
+        new_doc = DocumentType.objects.create(
             prospect = instance
         )
-        new_doc.name = doc[1]
+        new_doc.general_name = doc[1]
         new_doc.type = doc[0]
         new_doc.description = doc[2]
         new_doc.save()

@@ -30,8 +30,8 @@
                             <div class="card rounded-0 shadow-none m-0 border-start border-light">
                                 <div class="card-body text-center">
                                     <i class="ri-list-check-2 text-muted font-24"></i>
-                                    <h3><span>715</span></h3>
-                                    <p class="text-muted font-15 mb-0">Total Tasks</p>
+                                    <h3><span>X</span></h3>
+                                    <p class="text-muted font-15 mb-0">XXX XXX</p>
                                 </div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                                     <td>{{ prospect.get_todo_count }}</td>
                                     <td>{{ prospect.last_updated }} </td>
                                     <td class="table-action">
-                                        <a href="{% url 'tracker-detail' prospect.pk %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                        <a href="{% url 'tracker-detail' prospect.pk prospect.get_next_document_type %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
                                         <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
                                     </td>
                                 </tr>

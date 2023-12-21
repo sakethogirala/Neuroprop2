@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.views.generic import ListView, DetailView
 from django.core.files.storage import FileSystemStorage
-from .models import Prospect, Document
+from .models import Prospect, Document, DocumentType
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 import openai
 from django.conf import settings
 from django.http import JsonResponse
+import json
 
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -21,40 +22,53 @@ class TrackerMain(ListView):
         context = super().get_context_data(**kwargs)
         context["total"] = self.model.objects.all().count()
         return context
-    
-class TrackerDetail(DetailView):
-    model = Prospect
-    template_name = "tracker-detail.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["now"] = timezone.now()
-        return context
+def tracker_detail(request, prospect_pk, document_type_pk):
+    prospect = get_object_or_404(Prospect, pk = prospect_pk)
+    document_type = get_object_or_404(DocumentType, pk = document_type_pk)
+    context = {
+        "prospect": prospect,
+        "current_document_type": document_type
+    }
+    return render(request, "tracker-detail.html", context = context)
+    if request.user.account_type == "user":
+        return render(request, "tracker-detail.html", context = context)
+    if request.user.account_type == "":
+        return render(request, "tracker-detail.html", context = context)
     
 def upload_document(request):
+    print(request.POST)
+    print(request.FILES)
     if request.method == 'POST' and request.FILES['file']:
         document_file = request.FILES.get('file')
-        document_pk = request.POST.get("document_pk")
-        document = get_object_or_404(Document, pk = document_pk)
+        document_type_pk = request.POST.get("document_type_pk")
+        document_type = get_object_or_404(DocumentType, pk = document_type_pk)
+        document = Document.objects.create(document_type = document_type)
         document.file = document_file
-        document.feedback = None
+        document.name = f"{document_type.general_name}_{document_type.document_count}"
         document.save()
-        print(client)
-        # Start AI Review
-        document.openai_start_feedback(client)
-
-        messages.success(request, "File uploaded. AI review started...")
-        return redirect(reverse("tracker-detail", kwargs={"pk": document.prospect.pk}))
+        document_type.document_count += 1
+        document_type.save()
+        print(document)
+        # # Start AI Review
+        document.openai_upload_file(client)
+        document.openai_check_file(client)
+        response = {
+            "status": "success",
+            "document_pk": document.pk
+        }
+        return JsonResponse(response, safe=False)
+        messages.success(request, "File uploaded. Checking File...")
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document_type.prospect.pk, "document_type_pk": document_type_pk}))
     raise Http404()
 
-def delete_document(request):
-    if request.method == "POST":
-        document_uid = request.POST.get("document_uid")
-        print(document_uid)
-        document = get_object_or_404(Document, uid = document_uid)
-        document.file.delete()
-        return redirect(reverse("tracker-detail", kwargs={"pk": document.prospect.pk}))
-    raise Http404()
+def delete_document(request, document_uid):
+    print(document_uid)
+    document = get_object_or_404(Document, uid = document_uid)
+    print(document)
+    document_type_pk = document.document_type.pk
+    document.delete()
+    return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document_type_pk}))
 
 
 def download_document(request):
@@ -66,6 +80,28 @@ def download_document(request):
             return FileResponse(document.file.open(), as_attachment=True, filename=f"{document.name}.pdf")
     raise Http404()
 
+def get_openai_get_file_check(request):
+    print("getting file check status...")
+    document_pk = request.GET.get("document_pk")
+    document = get_object_or_404(Document, pk = document_pk)
+    feedback = document.openai_get_file_check(client)
+
+    if not feedback:
+        return JsonResponse({"status": "pending"}, safe=False)
+    feedback = json.loads(feedback)
+    print("feedback json: \n")
+    print(feedback["correct"])
+    print(feedback["status"])
+    print(feedback["feedback"])
+    document.feedback = feedback["feedback"]
+    if feedback["correct"] == "false":
+        document.status = "rejected"
+        document.client_feedback = feedback["feedback"]
+    if feedback["correct"] == "true":
+        document.status = "approved"
+    document.file_checked = True
+    document.save()
+    return JsonResponse(data=feedback, safe=False)
 
 def get_openai_status(request):
     print("getting openai status...")
@@ -120,3 +156,12 @@ def remove_user(request):
         prospect.users.remove(user)
         messages.error(request, f"Removed user's access.")
     return redirect(reverse("tracker-detail", kwargs={"pk": prospect.pk}))
+
+
+def override_document_check(request, document_uid):
+    document = get_object_or_404(Document, uid = document_uid)
+    document_type_pk = document.document_type.pk
+    document.status = "approved"
+    document.overridden = True
+    document.save()
+    return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document_type_pk}))

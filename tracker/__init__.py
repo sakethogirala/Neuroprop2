@@ -2,6 +2,7 @@
 class DOCUMENT:
 
     STATUS_CHOICES = [
+        ("not_uploaded", "Not Uploaded"),
         ("pending", "Pending"),
         ("revising", "Revising"),
         ("approved", "Approved"),
@@ -25,7 +26,7 @@ class DOCUMENT:
         # Sponsor Documents
         ("Personal Financial Statement", "SponsorFinancialStatement", "Net worth and liquidity of the sponsor."),
         ("Credit Report", "SponsorCreditReport", "Credit history and score of the sponsor."),
-        ("Resume or Bio", "SponsorResume", "Demonstrating experience in hotel management and ownership."),
+        ("Resume or Bio", "SponsorResume", "Demonstrating experience."),
         ("Tax Returns (Last 2-3 Years)", "TaxReturns", "Personal and business tax documents for financial assessment."),
 
         # Legal and Compliance Documents

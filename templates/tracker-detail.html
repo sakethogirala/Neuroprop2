@@ -115,6 +115,117 @@
             </div>
         </div>
     </div> -->
+
+    <div class="row">
+        <div class="col-xxl-8 col-xl-7">
+            <div class="card d-block">
+                    <div class="card-body">
+                        <h4 class="header-title">{{ current_document_type.type }}</h4>
+                        <div endpoint="{% url 'get_ai_file_check_status' %}" id="document-upload">
+                        {% include 'includes/document-upload.html' %}
+                    </div>
+                    <div style="display: none;" id="document-loading">
+                        <div class="d-flex justify-content-center align-items-center my-5 flex-column">
+                            <div class="spinner-border avatar-md" role="status"></div>
+                            <div class="fw-bold mt-2" id="document-loading-text">Uploading file. Do not reload page!</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        {% for document in current_document_type.documents.all %}
+                        <!-- file preview template -->
+                        <div document_pk="{{ document.pk }}" class="document" checked="{{ document.file_checked }}" id="uploadPreviewTemplate">
+                            <div class="card mt-1 mb-0 shadow-none border">
+                                <div class="p-2">
+                                    <div class="row align-items-center">
+                                        <div id="document-status" class="col-auto">
+                                            {% if document.status == 'approved' %}
+                                            <div class="avatar-sm d-table">
+                                                <span class="avatar-title bg-success-lighten rounded-circle text-success">
+                                                    <i class="uil uil-check font-24"></i>
+                                                </span>
+                                            </div>
+                                            {% elif document.status == 'pending' %}
+                                            <div class="avatar-sm d-table">
+                                                <span class="avatar-title bg-info-lighten rounded-circle text-info">
+                                                    <i class="mdi mdi-exclamation-thick font-24"></i>
+                                                </span>
+                                            </div>
+                                            {% elif document.status == 'rejected' %}
+                                            <div class="avatar-sm d-table">
+                                                <span class="avatar-title bg-danger-lighten rounded-circle text-danger">
+                                                    <i class="uil uil-times font-24"></i>
+                                                </span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div id="document-loading" class="col-auto" style="display: none;">
+                                            <div class="d-flex justify-content-center">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                </div>
+                                            </div>
+                                        <div class="col ps-0">
+                                            <a href="{% url 'download-document' %}?document_uid={{ document.uid }}" class="text-muted fw-bold" data-dz-name>{{ document.name }}</a>
+                                        </div>
+                                        <div class="col-auto">
+                                            <!-- Button -->
+                                            <a id="delete-document-link" href="{% url 'delete-document' document.uid %}" class="btn btn-link btn-lg text-muted" data-dz-remove>
+                                                <i class="ri-close-line"></i>
+                                            </a>
+                                        </div>
+                                        
+                                    </div>
+                                    {% if document.client_feedback %}
+                                    <div class="mt-2 text-muted">{{ document.client_feedback }}</div>
+                                    {% endif %}
+                                    {% if document.status == 'rejected' %}
+                                    <a href="{% url 'override-document-check' document.uid %}" class="fw-bold mt-1 float-end" href="">Disagree?</a>
+                                    {% endif %}
+                                    {% if document.overridden %}
+                                    <div class="text-end fw-bold mt-1">Approved by user</div>
+                                    {% endif %}
+                                    
+                                </div>
+                                
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>  
+                </div>
+            </div> <!-- end card-->
+
+            <!-- end card-->
+        </div> <!-- end col -->
+
+        <div class="col-xxl-4 col-xl-5">
+
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title">Documents</h4>
+                    <div class="list-group list-group-flush">
+                        {% for document_type in prospect.document_types.all %}
+                        <a href="{% url 'tracker-detail' prospect.pk document_type.pk %}" class="document_type list-group-item d-flex justify-content-between align-items-center {% if current_document_type == document_type %}active{% endif %}">
+                            {{ document_type.type }}
+                            {% if document_type.status == 'not_uploaded' %}
+                            <span class="badge bg-secondary">Awaiting</span>
+                            {% elif document_type.status == 'pending' %}
+                            <span class="badge bg-info">Pending</span>
+                            {% elif document_type.status == 'revising' %}
+                            <span class="badge bg-warning">Revising</span>
+                            {% elif document_type.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif document_type.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
@@ -208,22 +319,60 @@
 {% endblock %}
 
 {% block js %}
+<script>
+    let active_document_type = null;
+    let document_type_btns = document.getElementsByClassName("document_type")
+    for(let i = 0; i < document_type_btns.length; i++){
+        document_type_btns.addEventListener("click", )
+    }
+
+</script>
 <script src="{% static 'js/upload-document.js' %}"></script>
 <script src="{% static 'js/dropzone.js' %}"></script>
 <script src="{% static 'js/component.fileupload.js' %}"></script>
 <script>
-    var dropzones = document.getElementsByClassName("dropzone")
-    console.log(dropzones)
-    for (let i = 0; i < dropzones.length; i++) {
-        console.log("hellloooo")
-        let dropzone = new Dropzone(dropzones[i], {
-            addedfile: file => {
-                console.log("completed")
-                window.location.reload();
-            }
-        });
-        console.log("completed: ", dropzone)
+    var uploads = document.getElementsByClassName("uploads")
+    for(let i = 0; i < uploads.length; i++){
+        uploads[i].addEventListener("change", function(){
+                console.log("submitting....")
+                uploads[i].submit();
+        })
     }
 </script>
+<script>
+    var dropzones = document.getElementsByClassName("dropzone");
+    console.log(dropzones);
+
+    for (let i = 0; i < dropzones.length; i++) {
+        console.log("Initializing Dropzone");
+
+        let dropzone = new Dropzone(dropzones[i], {
+            addedfile: file => {
+                console.log(file)
+            },
+            acceptedFiles: "application/pdf"
+        });
+
+        dropzone.on("sending", function(file, xhr, formData) {
+            console.log("File sending");
+            document.getElementById("document-upload").style.display = "none";
+            document.getElementById("document-loading").style.display = "block";
+            formData.append("document_type_pk", "{{ current_document_type.pk }}");
+        
+        });
+        dropzone.on("success", function(file, response) {
+        // Refresh the page
+            console.log(file);
+            console.log(response)
+            if(response.status == "success"){
+                window.location.reload();
+                // document.getElementById("document-loading-text").innerHTML = "Analyzing file...";
+                // file_check(response.document_pk);
+            }
+        });
+        console.log("Dropzone initialized: ", dropzone);
+    }
+</script>
+
 <script src="{% static 'js/ai-feedback.js' %}"></script>
 {% endblock %}

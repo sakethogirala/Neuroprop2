@@ -57,11 +57,16 @@ class Prospect(models.Model):
             return "danger"
         
     def get_document_progress_percentage(self):
-        documents = self.documents.all()
+        documents = self.document_types.all()
         if documents:
-            return (documents.filter(is_valid = True).count() / documents.count()) * 100
+            return (documents.filter(status = "approved").count() / documents.count()) * 100
         return "0"
     
     def get_todo_count(self):
-        documents = self.documents.all()
-        return documents.count() - documents.filter(is_valid = True).count()
+        documents = self.document_types.all()
+        return documents.count() - documents.filter(status = "approved").count()
+    
+    def get_next_document_type(self):
+        document_type = self.document_types.all().first()
+        print(document_type.pk)
+        return document_type.pk
