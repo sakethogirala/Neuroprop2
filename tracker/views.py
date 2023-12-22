@@ -140,7 +140,7 @@ def send_to_user(request):
     # grant this user permission to be on prospect
     prospect.users.add(new_user)
     messages.success(request, f"Sent {email} NeuroProp account login for this project.")
-    return redirect(reverse("tracker-detail", kwargs={"pk": prospect.pk}))
+    return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect_pk, "document_type_pk": prospect.get_next_document_type()}))
 
 def remove_user(request):
     prospect_uid = request.GET.get("prospect_uid")
