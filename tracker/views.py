@@ -150,11 +150,11 @@ def remove_user(request):
     prospect = get_object_or_404(Prospect, uid = prospect_uid)
     if user == request.user:
         messages.error(request, f"You can't remove yourself.")
-        return redirect(reverse("tracker-detail", kwargs={"pk": prospect.pk}))
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
     if request.user.is_staff or (request.user in prospect.users.all()):
         prospect.users.remove(user)
         messages.error(request, f"Removed user's access.")
-    return redirect(reverse("tracker-detail", kwargs={"pk": prospect.pk}))
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
 
 
 def override_document_check(request, document_uid):

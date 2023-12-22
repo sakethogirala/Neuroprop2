@@ -130,7 +130,7 @@
 
             {% for property in request.user.prospects.all %}
             <li class="side-nav-item">
-                <a href="{% url 'tracker-detail' property.pk %}" aria-expanded="false" aria-controls="sidebarCrm" class="side-nav-link collapsed">
+                <a href="{% url 'tracker-detail' property.pk prospect.get_next_document_type %}" aria-expanded="false" aria-controls="sidebarCrm" class="side-nav-link collapsed">
                     <span class="badge bg-{{ property.get_progress_class }} text-white float-end">{{ property.get_status_display }}</span>
                     <span>{{ property.name }}</span>
                 </a>
