@@ -133,8 +133,7 @@ def send_to_user(request):
         prospect.users.add(existing_user.first())
         # Send email showing with new link and permission
         messages.success(request, "User already exists. Adding them to project.")
-        return redirect(reverse("tracker-detail", kwargs={"pk": prospect.pk}))
-    
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect_pk, "document_type_pk": prospect.get_next_document_type()}))
     new_user = get_user_model().objects.create(email = email, account_type = "user", password = "neuroprop", is_allowed = False)
     # send email to user to login, change password, etc
     new_user.send_password_set_email(request)
