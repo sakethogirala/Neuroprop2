@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load jsonify %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+<link rel="stylesheet" href="{% static 'css/jquery-jvectormap.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Lender Map</h4>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3" id="map" style="width: 100%; height: 400px"></div>
+            <div class="mb-3">
+                <select id="property-type" class="form-select form-control" aria-label="Default select example">
+                    <option selected>Choose Property Type</option>
+                    <option value="RT">Retail</option>
+                    <option value="OF">Office</option>
+                    <option value="IN">Industrial</option>
+                    <option value="WH">Warehouse</option>
+                    <option value="MF">Multifamily</option>
+                    <option value="LO">Loding</option>
+                    <option value="HC">Healthcare</option>
+                    <option value="SS">Self-Storage</option>
+                    <option value="MU">Mixed Used</option>
+                    <option value="MH">Mobile Home</option>
+                    <option value="CH">Co-op Housing</option>
+                    <option value="OT">Other</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+
+            <div style="display: none;" id="results-body" class="card-body pt-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm table-nowrap table-centered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Contact</th>
+                                <th>Types</th>
+                                <th>Min Loan</th>
+                                <th>Max Loan</th>
+                                <th>Max LTV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results">
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="{% static 'js/jquery-jvectormap.js' %}"></script>
+<script src="{% static 'js/us-map.js' %}"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    var data = {
+        {
+            lenders | jsonify
+        }
+    };
+
+    var property_select = document.getElementById("property-type");
+    var selected_state = null;
+    let selected_state_name = null;
+    let selected_type = null;
+    let deal_type_title = document.getElementById("deal-type-title");
+    let deal_state_title = document.getElementById("deal-state-title");
+    var results_container = document.getElementById("results");
+    let results_body = document.getElementById("results-body");
+    $(function () {
+        var map = new jvm.Map({
+            container: $("#map"),
+            map: 'us_aea',
+            backgroundColor: "transparent",
+            regionsSelectable: true,
+            regionStyle: {
+                initial: {
+                    fill: 'rgb(114, 124, 245)'
+                },
+                hover: {
+                    fill: "rgb(114, 124, 220)"
+                },
+                selected: {
+                    fill: '#0acf97'
+                }
+            },
+            onRegionClick: function (event, code) {
+                // This will give you the name of the state
+                var stateName = map.getRegionName(code);
+                console.log(stateName);
+                selected_state_name = stateName;
+
+                map.clearSelectedRegions()
+                var stateCode = code.split('–')[0].split('-')[1].trim();
+                selected_state = stateCode;
+                if (selected_type) {
+                    display_results();
+                }
+            }
+        });
+    });
+    property_select.addEventListener("change", function (e) {
+        if (!selected_state) {
+            return alert("Select a state")
+        }
+        selected_type = this.value;
+        display_results();
+    })
+
+    function display_results() {
+        results_body.style.display = "block";
+        let propertyKey = `${selected_type}`;
+        // deal_state_title.innerHTML = selected_state_name;
+        // deal_type_title.innerHTML = displayPropertyName(selected_type);
+        let results = get_results(selected_state, propertyKey);
+        console.log(results);
+        let htmlContent = '';
+
+        results.forEach(result => {
+            console.log(result)
+            htmlContent += `
+            <tr>
+            <td>
+            <h5 class="font-15 mb-1 fw-normal">${result.fields.data.title}</h5>
+            </td>
+            <td>${result.fields.data.contact}</td>
+            <td>${result.fields.data.type}</td>
+            <td>${result.fields.data.min_loan}</td>
+            <td>${result.fields.data.max_loan}</td>
+            <td>${result.fields.data.max_ltv}</td>
+            </tr>
+            `;
+        });
+        results_container.innerHTML = htmlContent;
+    }
+
+    function get_results(state, property_type) {
+        console.log(state, property_type);
+
+        let filteredData = data.filter(obj => obj.fields.data.property_types.includes(property_type) && obj.fields.data
+            .states.includes(state));
+        return filteredData;
+    }
+
+    function displayPropertyName(value) {
+        var selectElement = document.getElementById('property-type');
+
+        for (var i = 0; i < selectElement.options.length; i++) {
+            if (selectElement.options[i].value === value) {
+                return selectElement.options[i].text
+            }
+        }
+    }
+</script>
+{% endblock %}

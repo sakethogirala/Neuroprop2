@@ -14,44 +14,44 @@
             </div>
         </div>
     </div>
-<div class="row">
-<div class="col-12">
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="header-title">Results</h4>
-            <a href="{% url 'refresh_data' %}" class="btn btn-primary">Refresh Data</a>
-        </div>
-        <div class="card-body">
-    <table class="table table-centered mb-0">
-        <thead>
-        <tr>
-            <th>Loan ID</th>
-            <th>Property name</th>
-            <th>City</th>
-            <th>Loan Balance</th>
-            <th>Likelihood</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for entry in data.object_list %}
-            <tr>
-                <td><a style="text-decoration: none;">{{entry.0}}</a> </td>
-                <td>{{entry.1}}</td>
-                <td>{{entry.2}}</td>
-                <td>{{entry.3}}</td>
-                <td class="text-center">{% include 'includes/score-badge.html' with score=entry.4 %}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Results</h4>
+                    <a href="{% url 'refresh_data' %}" class="btn btn-primary">Refresh Data</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-centered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Property name</th>
+                                <th>City</th>
+                                <th>Loan Balance</th>
+                                <th>Likelihood</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in data.object_list %}
+                            <tr>
+                                <td><a style="text-decoration: none;">{{entry.0}}</a> </td>
+                                <td>{{entry.1}}</td>
+                                <td>{{entry.2}}</td>
+                                <td>{{entry.3}}</td>
+                                <td class="text-center">{% include 'includes/score-badge.html' with score=entry.4 %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
 
-    </table>
- {% include 'includes/pagination.html' with page_obj=data %}
-        </div>
+                    </table>
+                    {% include 'includes/pagination.html' with page_obj=data %}
+                </div>
 
-    </div> <!-- end card-->
-</div>
-</div>
-</div>
+            </div> <!-- end card-->
+        </div>
+    </div>
 </div>
 
 {% endblock %}

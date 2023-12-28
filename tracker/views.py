@@ -9,8 +9,10 @@ from django.http import Http404, FileResponse
 from django.contrib.auth import get_user_model
 import openai
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
+from django.contrib.auth.decorators import login_required
+from prospect import PROSPECT
 
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -21,6 +23,8 @@ class TrackerMain(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["total"] = self.model.objects.all().count()
+        context["purpose_choices"] = PROSPECT.PURPOSE_CHOICES
+        context["property_type_choices"] = PROSPECT.PROPERTY_TYPE_CHOICES
         return context
 
 def tracker_detail(request, prospect_pk, document_type_pk):
@@ -28,7 +32,7 @@ def tracker_detail(request, prospect_pk, document_type_pk):
     document_type = get_object_or_404(DocumentType, pk = document_type_pk)
     context = {
         "prospect": prospect,
-        "current_document_type": document_type
+        "current_document_type": document_type,
     }
     return render(request, "tracker-detail.html", context = context)
     if request.user.account_type == "user":
@@ -89,18 +93,19 @@ def get_openai_get_file_check(request):
     if not feedback:
         return JsonResponse({"status": "pending"}, safe=False)
     feedback = json.loads(feedback)
-    print("feedback json: \n")
-    print(feedback["correct"])
-    print(feedback["status"])
-    print(feedback["feedback"])
+    print("loading...")
+    print(feedback)
     document.feedback = feedback["feedback"]
-    if feedback["correct"] == "false":
+    if feedback["correct"]:
+        print("APPROVED")
+        document.status = "approved"
+    if not feedback["correct"]:
+        print("rejected")
         document.status = "rejected"
         document.client_feedback = feedback["feedback"]
-    if feedback["correct"] == "true":
-        document.status = "approved"
     document.file_checked = True
     document.save()
+    feedback["status"] = "success"
     return JsonResponse(data=feedback, safe=False)
 
 def get_openai_status(request):
@@ -164,3 +169,31 @@ def override_document_check(request, document_uid):
     document.overridden = True
     document.save()
     return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document_type_pk}))
+
+@login_required
+def create_prospect(request):
+    if request.method == "POST":
+        data = request.POST
+        print(data)
+        name = data.get("name")
+        purpose = data.get("purpose")
+        property_type= data.get("property-type")
+        amount = data.get("amount")
+        prospect = Prospect.objects.create(
+            name = name,
+            purpose = purpose,
+            property_type = property_type,
+            amount = amount
+        )
+        prospect.users.add(request.user)
+        messages.success(request, "Prospect created!")
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
+    return HttpResponse("error", status = "404")
+
+@login_required
+def delete_prospect(request, prospect_uid):
+    if request.user.account_type != "user":
+        prospect = get_object_or_404(Prospect, uid = prospect_uid)
+        prospect.delete()
+        return redirect("tracker-main")
+    return HttpResponse("error", status = "404")

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}     
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Lenders</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-new-modal">Add New</button>
+                </div>
+                <div class="card-body">
+                    <table class="table table-centered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Contact</th>
+                                <th>Types</th>
+                                <th>Min Loan</th>
+                                <th>Max Loan</th>
+                                <th>Properties</th>
+                                <th>States</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lender in lenders %}
+                            <tr>
+                                <td>{{ lender.data.title }}</td>
+                                <td>{{ lender.data.contact }}</td>
+                                <td>{{ lender.data.type }}</td>
+                                <td>{{ lender.data.min_loan }}</td>
+                                <td>{{ lender.data.max_loan }}</td>
+                                <td>{% for type in lender.data.property_types %}{{type}}, {% endfor %}</td>
+                                <td>{% for state in lender.data.states %}{{state}}, {% endfor %}</td>
+                                <td class="table-action">
+                                    <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                    <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                    {% include 'includes/pagination.html' with page_obj=data %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'includes/add-lender-modal.html' %}
+{% endblock %}
+

@@ -40,6 +40,32 @@ class DOCUMENT:
     ]
 
     SELF_STORAGE_DOCS = [
-        ("doc-1", "FILENAME"),
-        ("doc-2", "FILENAME2"),
+        # Financial Documents
+        ("Financial Statements (Last 2-3 Years)", "FinancialStatements", "Assess financial health, including income, expenses, and net profit."),
+        ("Rent Roll", "RentRoll", "Detailed tenant lease terms and rent amounts."),
+        ("Current Year Budget", "CurrentYearBudget", "Forecasted revenue and expenses."),
+        ("Bank Statements (Last 3-6 Months)", "BankStatements", "Verify financial standing and cash flow."),
+        ("Debt Service Coverage Ratio (DSCR) Analysis", "DSCRAnalysis", "Evaluate ability to cover loan payments."),
+
+        # Property Documents
+        ("Property Appraisal Report", "PropertyAppraisal", "Current valuation."),
+        ("Property Insurance Policies", "InsurancePolicies", "Detail coverage."),
+        ("Physical Condition Report", "PhysicalCondition", "Assess physical state."),
+        ("Environmental Reports", "EnvironmentalReport", "Environmental compliance."),
+
+        # Sponsor Documents
+        ("Personal Financial Statement", "PersonalFinancialStatement", "Sponsor's net worth and liquidity."),
+        ("Credit Report", "CreditReport", "Credit history and score."),
+        ("Resume or Bio", "Resume", "Experience in self-storage/related industries."),
+
+        # Legal and Compliance Documents
+        ("Title Report", "TitleReport", "Ownership and liens."),
+        ("Zoning and Compliance Certifications", "ZoningCompliance", "Regulatory compliance."),
+        ("Operating Licenses and Permits", "OperatingLicenses", "Legal operation proof."),
+
+        # Additional Supporting Documents
+        ("Capital Improvement Records", "CapitalImprovements", "Document renovations/improvements."),
+        ("Market Analysis Reports", "MarketAnalysis", "Market conditions and competition."),
+        ("Lease Abstracts", "LeaseAbstracts", "Summary of key lease terms."),
+        ("Management Agreements", "ManagementAgreements", "Details of facility management.")
     ]

@@ -69,7 +69,7 @@
                         <h4 class="header-title">Prospects</h4>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-success me-2"><i class="mdi mdi-plus me-1"></i> Create New</button>
+                        <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#add-new-modal">Add New</button>
                     </div>
                 </div>
 
@@ -100,7 +100,7 @@
                                     <td>{{ prospect.last_updated }} </td>
                                     <td class="table-action">
                                         <a href="{% url 'tracker-detail' prospect.pk prospect.get_next_document_type %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
-                                        <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                        <a onclick="return confirm('Are you sure you want to delete this?')" href="{% url 'delete_prospect' prospect.uid %}" class="action-icon"> <i class="mdi mdi-delete"></i></a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -113,7 +113,6 @@
         </div><!-- end col-->
     </div>
 
-<!-- end row-->
 </div>
-
+{% include 'includes/add-prospect-modal.html' %}
 {% endblock %}

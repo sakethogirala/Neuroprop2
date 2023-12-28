@@ -88,6 +88,21 @@ class Document(models.Model):
         print("checking ai file...")
         run = client.beta.threads.runs.retrieve(thread_id=self.openai_thread_file_check_id, run_id=self.openai_run_file_check_id)
         print(run)
+        print(run.status)
+        if run.status == "requires_action":
+            print("REQUIRED ACTION \n")
+            call_id = run.required_action.submit_tool_outputs.tool_calls[0].id
+            new_run = client.beta.threads.runs.submit_tool_outputs(
+            thread_id=self.openai_thread_file_check_id,
+            run_id=self.openai_run_file_check_id,
+            tool_outputs=[
+                {
+                    "tool_call_id": call_id,
+                    "output": "{success: 'true'}",
+                },
+                ]
+            )
+            print(new_run)
         if run.status == "completed":
             messages = client.beta.threads.messages.list(thread_id=self.openai_thread_file_check_id)
             print("messages: ")

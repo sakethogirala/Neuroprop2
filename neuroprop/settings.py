@@ -31,7 +31,9 @@ INSTALLED_APPS = [
     'core',
     'prospect',
     'widget_tweaks',
-    'tracker'
+    'tracker',
+    'market',
+    'jsonify'
 ]
 
 MIDDLEWARE = [
@@ -146,7 +148,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 OPENAI_ASSISTANT_UNDERWRITE_ID = "asst_YhmyQJYZshkwKaEijpTOF2f6"
-OPENAI_ASSISTANT_FILE_CHECK_ID = "asst_CdSD5b3bIy4A4EXtS4EH6lGj"
+OPENAI_ASSISTANT_FILE_CHECK_ID = "asst_HzSXUPou4D394UmM3Fpeq38R"
 
 LOGGING = {
     'version': 1,

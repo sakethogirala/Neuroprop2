@@ -45,6 +45,8 @@ class Prospect(models.Model):
                 return (index / (len(filtered_choices) - 1)) * 100
 
     def get_progress_class(self):
+        if self.status == "pending":
+            return "secondary"
         if self.status == "draft":
             return "secondary"
         if self.status == "in-progress":
