@@ -10,7 +10,6 @@ attrs==23.1.0
 certifi==2023.7.22
 charset-normalizer==3.3.0
 click==8.1.7
-cloudpickle==2.0.0
 contourpy==1.2.0
 cramjam==2.7.0
 cycler==0.12.1
@@ -43,8 +42,6 @@ jedi==0.19.1
 joblib==1.3.2
 kiwisolver==1.4.5
 markdown-it-py==3.0.0
-matplotlib==3.8.2
-matplotlib-inline==0.1.6
 mdurl==0.1.2
 modal==0.56.4358
 multidict==6.0.4
