@@ -34,11 +34,10 @@ def tracker_detail(request, prospect_pk, document_type_pk):
         "prospect": prospect,
         "current_document_type": document_type,
     }
-    return render(request, "tracker-detail.html", context = context)
     if request.user.account_type == "user":
-        return render(request, "tracker-detail.html", context = context)
-    if request.user.account_type == "":
-        return render(request, "tracker-detail.html", context = context)
+        return render(request, "tracker-detail-client.html", context = context)
+
+    return render(request, "tracker-detail-staff.html", context = context)
     
 def upload_document(request):
     print(request.POST)
@@ -196,4 +195,16 @@ def delete_prospect(request, prospect_uid):
         prospect = get_object_or_404(Prospect, uid = prospect_uid)
         prospect.delete()
         return redirect("tracker-main")
+    return HttpResponse("error", status = "404")
+
+@login_required
+def send_client_feedback(request):
+    if request.user.account_type != "user":
+        data = request.POST
+        document_uid = data.get("document_uid")
+        document = get_object_or_404(Document, uid = document_uid)
+        feedback = data.get("feedback")
+        document.client_feedback = feedback
+        document.save()
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document.document_type.pk}))
     return HttpResponse("error", status = "404")

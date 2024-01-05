@@ -27,24 +27,6 @@
                     <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }} mb-3">
                         {{ prospect.get_status_display }}</div>
 
-                    <!-- <h5>Project Overview:</h5>
-
-                    <p class="text-muted mb-2">
-                        With supporting text below as a natural lead-in to additional contenposuere erat a ante.
-                        Voluptates, illo, iste itaque voluptas
-                        corrupti ratione reprehenderit magni similique? Tempore, quos delectus asperiores libero
-                        voluptas quod perferendis! Voluptate,
-                        quod illo rerum? Lorem ipsum dolor sit amet.
-                    </p>
-
-                    <p class="text-muted mb-4">
-                        Voluptates, illo, iste itaque voluptas corrupti ratione reprehenderit magni similique? Tempore,
-                        quos delectus asperiores
-                        libero voluptas quod perferendis! Voluptate, quod illo rerum? Lorem ipsum dolor sit amet. With
-                        supporting text below
-                        as a natural lead-in to additional contenposuere erat a ante.
-                    </p> -->
-
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-4">
@@ -175,15 +157,30 @@
                                         </div>
                                         
                                     </div>
-                                    {% if document.client_feedback %}
-                                    <div class="mt-2 text-muted">{{ document.client_feedback }}</div>
+                                    <div class="d-flex flex-column">
+                                    {% if document.feedback %}
+                                    <h6 class="mb-0">AI Feedback (Staff Only)</h6>
+                                    <div class="my-1 text-muted">{{ document.feedback }}</div>
+                                
+                                    {% endif %}
+                                {% if document.client_feedback %}
+                                <h6 class="mb-0">Client Feedback (Client Sees)</h6>
+                                    <div class="my-1 text-muted">{{ document.client_feedback }}</div>
                                     {% endif %}
                                     {% if document.status == 'rejected' %}
-                                    <a href="{% url 'override-document-check' document.uid %}" class="fw-bold mt-1 float-end" href="">Disagree?</a>
+                                    <div class="mb-1">
+                                        <a onclick="return confirm('Are you sure you want to override this?')" href="{% url 'override-document-check' document.uid %}" class="fw-bold float-end">Disagree?</a>
+                                    </div>
                                     {% endif %}
                                     {% if document.overridden %}
-                                    <div class="text-end fw-bold mt-1">Approved by user</div>
+                                    <div class="mb-1">
+                                    <div class="float-end fw-bold mt-1">Approved by user</div>
+                                    </div>
                                     {% endif %}
+                                    <div class="mb-1">
+                                    <a document_uid="{{ document.uid }}" class="float-end fw-bold send-client-feedback">Send client feedback?</a>
+                                </div>
+                            </div>
                                     
                                 </div>
                                 
@@ -315,6 +312,7 @@
 </div>
 
 {% include 'includes/send-to-user-modal.html' %}
+{% include 'includes/send-client-feedback-modal.html' %}
 
 {% endblock %}
 
@@ -347,11 +345,12 @@
         console.log("Initializing Dropzone");
 
         let dropzone = new Dropzone(dropzones[i], {
-            addedfile: file => {
-                console.log(file)
-            },
-            acceptedFiles: "application/pdf"
-        });
+        addedfile: file => {
+            console.log(file);
+        },
+        acceptedFiles: "application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
+         });
+
 
         dropzone.on("sending", function(file, xhr, formData) {
             console.log("File sending");
@@ -375,4 +374,15 @@
 </script>
 
 <script src="{% static 'js/ai-feedback.js' %}"></script>
+
+<script>
+let send_client_feedback_btns = document.getElementsByClassName("send-client-feedback");
+for(let i = 0; i < send_client_feedback_btns.length; i++){
+    send_client_feedback_btns[i].addEventListener("click", function(e){
+        document.getElementById("client_feedback_document_uid").value = send_client_feedback_btns[i].getAttribute("document_uid")
+        var myModal = new bootstrap.Modal(document.getElementById('send-client-feedback-modal'));
+        myModal.show(); 
+    })
+}
+</script>
 {% endblock %}

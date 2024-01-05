@@ -15,4 +15,5 @@ urlpatterns = [
     path("ai/get-file-status/", get_openai_get_file_check, name="get_ai_file_check_status"),
     path("create-prospect/", create_prospect, name="create_prospect"),
     path("delete-prospect/<prospect_uid>/", delete_prospect, name="delete_prospect"),
+    path("send-client-feedback/>/", send_client_feedback, name="send_client_feedback")
 ]

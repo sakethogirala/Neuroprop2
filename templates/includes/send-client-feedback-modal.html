@@ -1,0 +1,24 @@
+                                                    
+<div id="send-client-feedback-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="send-to-modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="send-to-modalLabel">Send Client Feedback</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <form method="POST" action="{% url 'send_client_feedback' %}">{% csrf_token %}
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="example-textarea" class="form-label">Client Feedback</label>
+                    <textarea name="feedback" placeholder="This will be displayed in the client portal." class="form-control" id="client_feedback" rows="5"></textarea>
+                </div>
+                <input id="client_feedback_document_uid" type="hidden" name="document_uid" value="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
