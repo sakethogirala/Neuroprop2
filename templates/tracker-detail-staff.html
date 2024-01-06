@@ -160,12 +160,12 @@
                                     <div class="d-flex flex-column">
                                     {% if document.feedback %}
                                     <h6 class="mb-0">AI Feedback (Staff Only)</h6>
-                                    <div class="my-1 text-muted">{{ document.feedback }}</div>
+                                    <div class="my-1 text-muted">{{ document.feedback|safe }}</div>
                                 
                                     {% endif %}
                                 {% if document.client_feedback %}
                                 <h6 class="mb-0">Client Feedback (Client Sees)</h6>
-                                    <div class="my-1 text-muted">{{ document.client_feedback }}</div>
+                                    <div class="my-1 text-muted">{{ document.client_feedback|safe }}</div>
                                     {% endif %}
                                     {% if document.status == 'rejected' %}
                                     <div class="mb-1">
@@ -222,93 +222,6 @@
         </div>
     </div>
 
-
-    <div class="row">
-        <div class="col-12">
-            <div class="page-title-box">
-                <h4 class="page-title">Documents</h4>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        {% for document in prospect.documents.all %}
-        <div class="col-md-6 col-lg-3">
-            <!-- project card -->
-            <div class="card d-block ribbon-box">
-                <div class="card-body">
-                    {% if document.status == 'pending' %}
-                    <div class="ribbon ribbon-secondary float-end">Pending</div>
-                    {% elif document.status == 'revising' %}
-                    <div class="ribbon ribbon-warning float-end">Revising</div>
-                    {% elif document.status == 'approved' %}
-                    <div class="ribbon ribbon-success float-end">Success</div>
-                    {% elif document.status == 'rejected' %}
-                    <div class="ribbon ribbon-danger float-end">Rejected</div>
-                    {% endif %}
-                    <!-- project title-->
-                    <h4 class="mt-0">
-                        <div class="text-title">{{ document.type }}</div>
-                    </h4>
-                    <p class="text-muted font-13 my-3">
-                        {{ document.description }}
-                    </p>
-                    {% if document.file %}
-
-
-                    <div id="uploadPreviewTemplate">
-                        <div class="card shadow-none border">
-                            <div class="px-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="">
-                                        <a href="javascript:void(0);" class="text-muted fw-bold"
-                                            data-dz-name>{{ document.name }}</a>
-                                    </div>
-                                    <div class="ms-auto d-flex icon-container">
-                                        <form method="GET" action="{% url 'download-document' %}?document_uid={{ document.uid }}" class="icon-form">
-                                            <input type="hidden" name="document_uid" value="{{ document.uid }}">
-                                            <button class="icon-button" type="submit"><i class="mdi mdi-download"></i></button>
-                                        </form>
-                                        <form method="POST" action="{% url 'delete-document' %}" class="icon-form">{% csrf_token %}
-                                            <input type="hidden" name="document_uid" value="{{ document.uid }}">
-                                            <button class="icon-button" type="submit"><i class="ri-close-line"></i></button>
-                                        </form>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    {% else %}
-                    {% include 'includes/document-upload.html' %}
-                    {% endif %}
-
-                    <div>
-
-                        {% if document.feedback %}
-
-                        <h5 class="text-primary float-start mt-3">Smart Feedback</h5>
-                        <div class="ribbon-content">
-                            {{ document.feedback|safe }}
-                        </div>
-                        {% else %}
-                        {% if document.file %}
-                        <button endpoint="{% url 'get_ai_doc_status' %}?document_pk={{ document.pk }}"
-                            document-pk="{{ document.pk }}" class="btn btn-primary mt-3 btn-ai-feedback">Get
-                            Feedback</button>
-                        {% else %}
-                        {% endif %}
-
-                        {% endif %}
-
-
-                    </div>
-                </div>
-            </div>
-        </div> <!-- end card-body-->
-        {% endfor %}
-    </div> <!-- end card-->
 </div>
 
 {% include 'includes/send-to-user-modal.html' %}

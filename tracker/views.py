@@ -55,7 +55,8 @@ def upload_document(request):
         print(document)
         # # Start AI Review
         document.openai_upload_file(client)
-        document.openai_check_file(client)
+        document.openai_check_start(client)
+        # document.openai_feedback_start(client)
         response = {
             "status": "success",
             "document_pk": document.pk
@@ -87,11 +88,12 @@ def get_openai_get_file_check(request):
     print("getting file check status...")
     document_pk = request.GET.get("document_pk")
     document = get_object_or_404(Document, pk = document_pk)
-    feedback = document.openai_get_file_check(client)
+    feedback = document.openai_get_result(client, document.openai_check_thread_id, document.openai_check_run_id)
 
     if not feedback:
         return JsonResponse({"status": "pending"}, safe=False)
-    feedback = json.loads(feedback)
+    
+    feedback = feedback
     print("loading...")
     print(feedback)
     document.feedback = feedback["feedback"]
@@ -107,22 +109,6 @@ def get_openai_get_file_check(request):
     feedback["status"] = "success"
     return JsonResponse(data=feedback, safe=False)
 
-def get_openai_status(request):
-    print("getting openai status...")
-    document_pk = request.GET.get("document_pk")
-    document = get_object_or_404(Document, pk = document_pk)
-    feedback = document.openai_get_feedback(client)
-    print("FEEDBACK: ", feedback)
-    if not feedback:
-        return JsonResponse({"status": "failed"}, safe=False)
-    document.feedback = feedback
-    document.save()
-    data = {
-        "status": "success",
-        "message": feedback
-    }
-    print(data)
-    return JsonResponse(data = data, safe=False)
 
 def send_to_user(request):
     # Get data and objects

@@ -11,7 +11,6 @@ urlpatterns = [
     path("document-override/<document_uid>/", override_document_check, name="override-document-check"),
     path("send-to-user/", send_to_user, name="send-to-user"),
     path("remove-user/", remove_user, name="remove-user"),
-    path("ai/get-status/", get_openai_status, name="get_ai_doc_status"),
     path("ai/get-file-status/", get_openai_get_file_check, name="get_ai_file_check_status"),
     path("create-prospect/", create_prospect, name="create_prospect"),
     path("delete-prospect/<prospect_uid>/", delete_prospect, name="delete_prospect"),
