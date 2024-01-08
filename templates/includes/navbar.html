@@ -122,24 +122,7 @@
     <!-- Sidebar -left -->
     <div class="h-100" id="leftside-menu-container" data-simplebar>
 
-        {% if request.user.account_type == 'user' %}
-        <ul class="side-nav">
-
-            <li class="side-nav-title">My Properties</li>
-
-
-            {% for property in request.user.prospects.all %}
-            <li class="side-nav-item">
-                <a href="{% url 'tracker-detail' property.pk property.get_next_document_type %}" aria-expanded="false" aria-controls="sidebarCrm" class="side-nav-link collapsed">
-                    <span class="badge bg-{{ property.get_progress_class }} text-white float-end">{{ property.get_status_display }}</span>
-                    <span>{{ property.name }}</span>
-                </a>
-            </li>
-            {% endfor %}
-
-
-        </ul>
-        {% else %}
+        {% if request.user.staff_access %}
 
         <!--- Sidemenu -->
         <ul class="side-nav">
@@ -206,6 +189,32 @@
             <li class="side-nav-title">Close</li>
         </ul>
         <!--- End Sidemenu -->
+
+        {% else %}
+        <ul class="side-nav">
+
+            <li class="side-nav-title">My Properties</li>
+
+
+            {% for property in request.user.prospects.all %}
+            <li class="side-nav-item">
+                <a href="{% url 'tracker-detail' property.pk property.get_next_document_type %}" aria-expanded="false" aria-controls="sidebarCrm" class="side-nav-link">
+                    <div class="position-relative">
+                        <span style="border-radius: 10px; padding-left: 6px; padding-right: 6px;" class="bg-{{ property.get_progress_class }} text-white">{{ property.get_status_display }}</span>
+                    </div>
+                    <div class="position-relative">
+                        <span>{{ property.name }}</span>
+                        {% if property.are_client_notifications %}
+                        <span class="p-1 bg-danger rounded-circle position-absolute"></span>
+                        {% endif %}
+                    </div>
+
+                </a>
+            </li>
+            {% endfor %}
+
+
+        </ul>
         {% endif %}
         <div class="clearfix"></div>
     </div>

@@ -29,6 +29,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def staff_access(self):
+        return self.is_staff or self.account_type in ['staff', 'partner']
 
     def send_confirmation_email(self, request):
         if not self.is_active:

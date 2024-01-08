@@ -1,4 +1,13 @@
 
+class DOCUMENT_TYPE:
+    STATUS_CHOICES = [
+        ("not_uploaded", "Not Uploaded"),
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        
+    ]
+
+
 class DOCUMENT:
 
     STATUS_CHOICES = [

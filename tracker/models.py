@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from .utils import get_doc_path
-from . import DOCUMENT
+from . import DOCUMENT, DOCUMENT_TYPE
 from prospect.models import Prospect
 from openai import OpenAI
 from django.conf import settings
@@ -13,13 +13,23 @@ class DocumentType(models.Model):
     type = models.CharField(max_length=100)
     description = models.TextField(max_length=1000, null=True, blank=True)
     general_name = models.CharField(max_length=100, null=True, blank=True)
-    status = models.CharField(max_length=100, choices=DOCUMENT.STATUS_CHOICES, default="not_uploaded")
+    status = models.CharField(max_length=100, choices=DOCUMENT_TYPE.STATUS_CHOICES, default="not_uploaded")
     created_at = models.DateTimeField(auto_now_add=True)
     objects = DocumentTypeManager()
     document_count = models.IntegerField(default=1)
+    staff_notifications = models.BooleanField(default = False)
+    client_notifications = models.BooleanField(default = False)
 
     def __str__(self) -> str:
         return f"{self.prospect} - {self.type}"
+
+    def get_status_class(self):
+        if self.status == "not_uploaded":
+            return "secondary"
+        if self.status == "pending":
+            return "info"
+        if self.status == "approved":
+            return "success"
 
 class Document(models.Model):
     document_type = models.ForeignKey(DocumentType, on_delete=models.CASCADE, related_name="documents", null=True)

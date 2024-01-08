@@ -1,0 +1,5 @@
+Your {{ document.name }} document was rejected.
+
+See the feedback: {{ link }}
+
+NeuroProp

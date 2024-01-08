@@ -72,3 +72,13 @@ class Prospect(models.Model):
         document_type = self.document_types.all().first()
         print(document_type.pk)
         return document_type.pk
+    
+    def are_staff_notifications(self):
+        if self.document_types.filter(staff_notifications=True).exists():
+            return True
+        return False
+    
+    def are_client_notifications(self):
+        if self.document_types.filter(client_notifications=True).exists():
+            return True
+        return False
