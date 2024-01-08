@@ -168,8 +168,9 @@
                                                 <div class="spinner-border text-primary" role="status"></div>
                                                 </div>
                                             </div>
-                                        <div class="col ps-0">
-                                            <a href="{% url 'download-document' %}?document_uid={{ document.uid }}" class="text-muted fw-bold" data-dz-name>{{ document.name }}</a>
+                                        <div class="col ps-0 align-items-center">
+                                            <a href="{% url 'download-document' %}?document_uid={{ document.uid }}" class="text-muted fw-bold d-flex align-items-center" data-dz-name><span>{{ document.name }}</span> <span style="margin-top: 2px;" class="mdi mdi-download font-20 ms-1"></span></a>
+                                            
                                         </div>
                                         <div class="col-auto">
                                             <!-- Button -->
