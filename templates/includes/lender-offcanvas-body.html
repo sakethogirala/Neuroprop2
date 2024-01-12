@@ -1,0 +1,83 @@
+<h2 id="offcanvas-title" class="text-center">{{ lender.title }}</h2>
+<div class="text-center mb-2">Notes: {{ lender.notes.all.count }}</div>
+<div class="d-flex mb-3">
+    <a href="#" onclick="scrollToAddNote()" class="btn btn-success w-50">
+        Add Note
+    </a>
+    
+      
+        <div class="btn btn-primary w-50 mx-2">
+            Edit
+        </div>
+</div>
+<hr>
+
+<div>
+    <h4>Contact Details</h4>
+    <div id="contact-details">{{ lender.data.contact }}</div>
+</div>
+<hr>
+<div>
+    <h4>Max Loan</h4>
+    <div id="max-loan">{{ lender.data.max_loan }}</div>
+</div>
+<hr>
+<div>
+    <h4>Min Loan</h4>
+    <div id="min-loan">{{ lender.data.min_loan }}</div>
+</div>
+<hr>
+<div>
+    <h4>Max LTV</h4>
+    <div id="max-ltv">{{ lender.data.max_ltv }}</div>
+</div>
+<hr>
+<div>
+    <h4>Property Types</h4>
+    <div id="lender-property-types">{{ lender.data.property_types|join:", " }}</div>
+</div>
+<hr>
+<div>
+    <h4>States</h4>
+    <div id="lender-states">{{ lender.data.states|join:", " }}</div>
+</div>
+<hr>
+<div>
+    <h4>Notes</h4>
+    {% for note in lender.notes.all %}
+    <div class="card mb-3">
+        <div class="text-muted card-header d-flex justify-content-between p-2">
+            <span>{{ note.user.email }}</span>
+            <span>{{ note.created_at|date:"F j, Y" }}</span>
+        </div>
+        <div class="card-body p-2">
+            <div class="card-text mb-0">{{ note.text|linebreaks }}</div>
+            {% if note.file %}
+                <a href="{{ note.file.url }}" class="link text-end ms-auto" download>Download File</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    <hr>
+    <h4>Add Note</h4>
+    <form id="add-note-section" method="POST" action="{% url 'add_note' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+            <div class="mb-3">
+                <label for="noteText" class="form-label">Note Text</label>
+                <textarea class="form-control" id="noteText" name="noteText" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="noteFile" class="form-label">File (optional)</label>
+                <input class="form-control" type="file" id="noteFile" name="noteFile">
+            </div>
+        </div>
+        <input type="hidden" name="lender_pk" value="{{ lender.pk }}">
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success w-100">Add Note</button>
+        </div>
+    </form>
+</div>
+
+
+

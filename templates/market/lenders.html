@@ -3,6 +3,7 @@
 
 {% block css %}     
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/lenders.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -11,46 +12,77 @@
         <div class="col-12">
             <div class="page-title-box">
                 <h4 class="page-title">Lenders</h4>
+                <button id="toggle_offcanvas" style="display: none;" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"></button>
             </div>
         </div>
     </div>
+    <div class="card">
+        <form method="get">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="form-group col">
+                        <label for="loan_amount" class="mr-1">Loan Amount</label>
+                        <input type="number" name="loan_amount" id="loan_amount" class="form-control"
+                               placeholder="Loan Amount" value="{{ request.GET.loan_amount }}">     
+                    </div>
+                    <div class="form-group col">
+                        <label for="state" class="mr-1">States</label>
+                        <select class="form-control" name="state" id="property-types-filter">
+                            <option value="" {% if not request.GET.state %}selected{% endif %}>Select State</option>
+                            {% for state in states %}
+                            <option value="{{ state }}" {% if request.GET.state == state %}selected{% endif %}>{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col">
+                        <label for="property_type" class="mr-1">Property Type</label>
+                        <select class="form-control" name="property_type" id="property_type">
+                            <option value="" {% if not request.GET.property_type %}selected{% endif %}>Select Property Type</option>
+                            {% for prop_type in property_types %}
+                            <option value="{{ prop_type }}" {% if request.GET.property_type == prop_type %}selected{% endif %}>{{ prop_type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </div>
+        </form>
+        
+        
+</div>
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-new-modal">Add New</button>
-                </div>
                 <div class="card-body">
-                    <table class="table table-centered mb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#add-new-modal">Add New</button>
+                    </div>
+                    <table class="table table-centered mb-0 table-hover">
                         <thead>
                             <tr>
                                 <th>Title</th>
-                                <th>Contact</th>
-                                <th>Types</th>
-                                <th>Min Loan</th>
-                                <th>Max Loan</th>
-                                <th>Properties</th>
-                                <th>States</th>
+                                <th>Notes</th>
                                 <th>Edit</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for lender in lenders %}
-                            <tr>
-                                <td>{{ lender.data.title }}</td>
-                                <td>{{ lender.data.contact }}</td>
-                                <td>{{ lender.data.type }}</td>
-                                <td>{{ lender.data.min_loan }}</td>
-                                <td>{{ lender.data.max_loan }}</td>
-                                <td>{% for type in lender.data.property_types %}{{type}}, {% endfor %}</td>
-
-                                <td>{{ lender.data.states|length }}</td>
+                            <tr endpoint="{% url 'render_offcanvas' %}" lender_pk="{{ lender.pk }}" class="lender-row"
+                                contact="{{ lender.data.contact }}"
+                                max_loan="{{ lender.data.max_loan }}"
+                                min_loan="{{ lender.data.min_loan }}"
+                                max_ltv="{{ lender.data.max_ltv }}"
+                                property_types="{{ lender.data.property_types|join:', ' }}"
+                                states="{{ lender.data.states|join:', ' }}">
+                                <td id="title">{{ lender.data.title }}</td>
+                                <td>{{ lender.notes.all.count }}</td>
                                 <td class="table-action">
                                     <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
                                     <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
                                 </td>
                             </tr>
                             {% endfor %}
+                            
                         </tbody>
 
                     </table>
@@ -61,5 +93,12 @@
     </div>
 </div>
 {% include 'includes/add-lender-modal.html' %}
+{% include 'includes/lender-offcanvas.html' %}
 {% endblock %}
 
+
+
+{% block js %}
+<script src="{% static 'js/lenders.js' %}"></script>
+
+{% endblock %}
