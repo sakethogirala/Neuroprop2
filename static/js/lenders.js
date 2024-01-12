@@ -2,6 +2,8 @@ const lenders = document.getElementsByClassName("lender-row");
 let offcanvas_toggle = document.getElementById("toggle_offcanvas");
 let active_lender = null;
 
+
+
 for(let i = 0; i < lenders.length; i++){
     lenders[i].addEventListener("click", function(e){
         console.log(this)
@@ -38,21 +40,6 @@ function change_data(lender){
 }
 
 
-// function change_data(lender){
-//     console.log(lender);
-//     document.getElementById("offcanvas-title").innerHTML = lender.querySelector("#title").innerHTML;
-//     document.getElementById("contact-details").innerHTML = lender.getAttribute("contact");
-
-//     // New code to handle additional attributes
-//     document.getElementById("max-loan").innerHTML = lender.getAttribute("max_loan");
-//     document.getElementById("min-loan").innerHTML = lender.getAttribute("min_loan");
-//     document.getElementById("max-ltv").innerHTML = lender.getAttribute("max_ltv");
-//     document.getElementById("lender-property-types").innerHTML = lender.getAttribute("property_types");
-//     document.getElementById("lender-states").innerHTML = lender.getAttribute("states");
-//     console.log("testing ", lender.querySelector("#test"));
-// }
-
-// Rest of your JavaScript code...
 
 document.getElementById("close-offcanvas").addEventListener("click", (e)=>{
     active_lender = null;
@@ -65,3 +52,17 @@ function scrollToAddNote() {
     // Scroll to the add note section
     addNoteSection.scrollIntoView({ behavior: 'smooth' });
 }
+
+document.getElementById('create_outreach').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var selectedLenders = [];
+    document.querySelectorAll('.lender-select:checked').forEach(function(checkbox) {
+        selectedLenders.push(checkbox.value);
+    });
+
+    // Join the array into a string
+    this.querySelector("#lenders").value = selectedLenders.join(',');
+
+    this.submit();
+});

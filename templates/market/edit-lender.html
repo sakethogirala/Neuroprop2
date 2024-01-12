@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <form action="{% url 'edit_lender' lender.pk %}" method="post">{% csrf_token %}
+                    <div class="mb-3">
+                        <input value="{{ lender.title }}" required name="title" type="text" placeholder="Title*" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <input value="{{ lender.data.contact }}" required name="contact" type="text" placeholder="Contact" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <input value="{{ lender.data.max_loan }}" name="max_loan" type="number" placeholder="Max Loan" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <input value="{{ lender.data.min_loan }}" name="min_loan" type="number" placeholder="Min Loan" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <input value="{{ lender.data.max_ltv }}" name="max_ltv" placeholder="Max LTV" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <select id="states" class="select2 form-control select2-multiple form-select" name="states[]"
+                            multiple="multiple">
+                            {% for state in states %}
+                            <option value="{{ state }}" {% if state in lender.data.states %}selected{% endif %}>{{ state }}</option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                    <div class="mb-3">
+                        <select id="property-types" class="form-select form-control select2 select2-multiple"
+                            name="property_types[]" multiple="multiple">
+                            {% for type in property_types %}
+                            <option value="{{ type }}" {% if type in lender.data.property_types %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    {% block end_js %}
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#states').select2({
+                placeholder: "Select states",
+            });
+            $('#property-types').select2({
+                placeholder: "Select property types",
+            });
+        });
+    </script>
+    {% endblock %}

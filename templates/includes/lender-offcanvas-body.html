@@ -1,14 +1,15 @@
 <h2 id="offcanvas-title" class="text-center">{{ lender.title }}</h2>
 <div class="text-center mb-2">Notes: {{ lender.notes.all.count }}</div>
 <div class="d-flex mb-3">
-    <a href="#" onclick="scrollToAddNote()" class="btn btn-success w-50">
+    <a style="width: 33%;" href="#" onclick="scrollToAddNote()" class="btn btn-success">
         Add Note
     </a>
-    
-      
-        <div class="btn btn-primary w-50 mx-2">
+    <a href="{% url 'edit_lender' lender.pk %}" style="width: 33%;" class="btn btn-primary mx-2">
             Edit
-        </div>
+    </a>
+     <a href="{% url 'delete_lender' lender.pk %}" onclick="return confirm('Are you sure you want to delete this lender?')" class="btn btn-danger" style="width: 33%;">
+        Delete
+    </a>
 </div>
 <hr>
 
@@ -68,7 +69,7 @@
                 <textarea class="form-control" id="noteText" name="noteText" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="noteFile" class="form-label">File (optional)</label>
+                <label for="noteFile" class="form-label">Note File (optional)</label>
                 <input class="form-control" type="file" id="noteFile" name="noteFile">
             </div>
         </div>

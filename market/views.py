@@ -3,6 +3,8 @@ from .models import *
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import re
+import json
+from django.urls import reverse
 
 @login_required
 def lender_map(request):
@@ -25,13 +27,17 @@ def lenders(request):
     # Filtering by property type
     property_type = request.GET.get('property_type')
     if property_type:
-        print("property type")
         query = query.filter(data__property_types__contains=[property_type])
 
     # Filtering by state
     state = request.GET.get('state')
     if state:
         query = query.filter(data__states__contains=[state])
+
+    name = request.GET.get('name')
+    if name:
+        print(name)
+        query = query.filter(data__title__icontains=name)
 
     context = {
         "lenders": query,
@@ -93,4 +99,70 @@ def add_note(request):
 
     # If not POST, redirect to some page or show an error
     messages.error(request, "error creating note.")
+    return redirect("lenders")
+
+def delete_lender(request, lender_pk):
+    if request.user.staff_access():
+        lender = get_object_or_404(Lender, pk = lender_pk)
+        lender.delete()
+        messages.success(request, "Lender deleted.")
+    else:
+        messages.error(request, "You do not have access to remove lenders.")
+    return redirect("lenders")
+
+def edit_lender(request, lender_pk):
+    lender = get_object_or_404(Lender, pk = lender_pk)
+    if request.method == "POST":
+        data = request.POST
+        title = data.get("title")
+        contact = data.get("contact")
+        max_loan = float(data.get("max_loan"))
+        min_loan = float(data.get("min_loan"))
+        max_ltv = data.get("max_ltv")
+        property_types = data.getlist("property_types[]")
+        states = data.getlist("states[]")
+        data = {
+            "title": title,
+            "type": "NA",
+            "contact": contact,
+            "max_loan": max_loan,
+            "min_loan": min_loan,
+            "max_ltv": max_ltv,
+            "property_types": property_types,
+            "states": states
+        }
+        lender.data = data
+        lender.title = data.get("title")
+        lender.save()
+        messages.success(request, "Lender edited!")
+        return redirect("lenders")
+    context = {
+        "lender": lender,
+        "states": ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"],
+        "property_types": ["RT", "OF", "IN", "WH", "MF", "LO", "HC", "SS", "MU", "MH", "CH", "OT"]
+    }
+    return render(request, "market/edit-lender.html", context)
+
+@login_required
+def create_outreach(request):
+    if request.method == "POST":
+        lenders_string = request.POST.get('lenders')
+        selected_lender_ids = lenders_string.split(',') if lenders_string else []
+
+
+        selected_lenders = Lender.objects.filter(id__in=selected_lender_ids)
+
+        new_outreach = Outreach.objects.create(
+            title=f'Outreach for {request.user.email}',
+            created_by=request.user,
+            status='planned',
+            description='Description of the outreach'
+        )
+
+
+        new_outreach.lenders.set(selected_lenders)
+        new_outreach.save()
+
+        return redirect(reverse("outreach-detail", kwargs={"pk": new_outreach.pk}))
+
     return redirect("lenders")
