@@ -1,16 +1,19 @@
-const lenders = document.getElementsByClassName("lender-row");
+let lenders = document.getElementsByClassName("lender-row");
 let offcanvas_toggle = document.getElementById("toggle_offcanvas");
 let active_lender = null;
 
+resetLenderTable();
 
-
-for(let i = 0; i < lenders.length; i++){
-    lenders[i].addEventListener("click", function(e){
-        console.log(this)
-        console.log(this.querySelector("#title").innerHTML);
-        show_offcanvas(this);
-    })
+function resetLenderTable(){
+    for(let i = 0; i < lenders.length; i++){
+        lenders[i].addEventListener("click", function(e){
+            console.log(this)
+            console.log(this.querySelector("#title").innerHTML);
+            show_offcanvas(this);
+        })
+    }
 }
+
 
 function show_offcanvas(lender){
     if(active_lender == lender){
@@ -53,16 +56,50 @@ function scrollToAddNote() {
     addNoteSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-document.getElementById('create_outreach').addEventListener('submit', function(e) {
-    e.preventDefault();
 
+document.getElementById('create-outreach-btn').addEventListener('click', function(e) {
+    let modalElement = document.getElementById('create-outreach-modal')
     var selectedLenders = [];
     document.querySelectorAll('.lender-select:checked').forEach(function(checkbox) {
         selectedLenders.push(checkbox.value);
     });
-
-    // Join the array into a string
-    this.querySelector("#lenders").value = selectedLenders.join(',');
-
-    this.submit();
+    if(selectedLenders.length == 0){
+        return alert("Please select lenders.")
+    }
+    modalElement.querySelector("#lender-count").innerHTML = selectedLenders.length;
+    modalElement.querySelector("#lenders").value = selectedLenders.join(',');
+    var myModal = new bootstrap.Modal(modalElement);
+    myModal.show(); 
 });
+
+let lender_search_endpoint = document.getElementById("lender-search-endpoint").value;
+let lendersTable = document.getElementById("lenders-table")
+    const inputFields = document.querySelectorAll('#name, #loan_amount');
+    inputFields.forEach(field => field.addEventListener('keyup', function() {
+        console.log("input ")
+        performSearch();
+    }));
+    const searchFields = document.querySelectorAll('#state, #property_type');
+    searchFields.forEach(field => field.addEventListener('change', function() {
+        console.log("select ")
+        performSearch();
+    }));
+
+    function performSearch() {
+        let name = document.getElementById('name').value;
+        let loanAmount = document.getElementById('loan_amount').value;
+        let state = document.getElementById('state').value;
+        let propertyType = document.getElementById('property_type').value;
+        
+        fetch(`${lender_search_endpoint}?name=${name}&loan_amount=${loanAmount}&state=${state}&property_type=${propertyType}`, {
+            method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+            lendersTable.innerHTML = data.html;
+            resetLenderTable();
+        });
+    }
+
+
+

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Outreach Detail</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="mt-0"><a href="{% url 'tracker-detail' prospect.pk  %}">{{ prospect.name }}</a></h3>
+                        <!-- project title-->
+                    </div>
+                    <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }} mb-3">
+                        {{ prospect.get_status_display }}</div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <h5>Property Type</h5>
+                                <p>{{ prospect.get_property_type_display }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <h5>Purpose Type</h5>
+                                <p>{{ prospect.get_purpose_display }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <h5>Amount</h5>
+                                <p>${{ prospect.amount }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tooltip-container">
+                        <h5>Sent To:</h5>
+                        <div class="d-flex align-items-center">
+                            <div>
+                                {% for user in prospect.users.all %}
+                                    {% if forloop.last %}
+                                    <a class="remove-user" href="{% url 'remove-user' %}?prospect_uid={{ prospect.uid }}&target_user_pk={{ user.pk }}">{{ user.email}}</a>
+                                    {% else %}
+                                    <a class="remove-user" href="{% url 'remove-user' %}?prospect_uid={{ prospect.uid }}&target_user_pk={{ user.pk }}">{{ user.email}}, </a>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="ms-auto">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#send-to-modal">Add Users</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- end card-body-->
+
+            </div> <!-- end card-->
+            <div class="card">
+                <div class="d-flex card-header justify-content-between align-items-center">
+                    <h4 class="header-title">Lender List</h4>
+                    <a href="javascript:void(0);" class="btn btn-primary">Send Emails <i class="mdi mdi-airplane ms-1"></i></a>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-nowrap table-hover mb-0">
+                            <tbody>
+                                {% for lender in outreach.lenders.all %}
+                                <tr>
+                                    <td>
+                                        <h5 class="font-14 my-1 fw-normal">{{ lender.title }}</h5>
+                                        <span class="text-muted font-13">07 April 2018</span>
+                                    </td>
+                                    <td>
+                                        <h5 class="font-14 my-1 fw-normal">$79.49</h5>
+                                        <span class="text-muted font-13">Price</span>
+                                    </td>
+                                    <td>
+                                        <h5 class="font-14 my-1 fw-normal">82</h5>
+                                        <span class="text-muted font-13">Quantity</span>
+                                    </td>
+                                    <td>
+                                        <h5 class="font-14 my-1 fw-normal">$6,518.18</h5>
+                                        <span class="text-muted font-13">Amount</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!-- end table-responsive-->
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col-->
+
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="d-flex card-header justify-content-between align-items-center">
+                    <h4 class="header-title">Activity</h4>
+                </div>
+
+                <div class="card-body py-0 mb-3" data-simplebar="init" style="max-height: 403px;"><div class="simplebar-wrapper" style="margin: 0px -24px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 0px 24px;"> 
+                    <div class="timeline-alt py-0">
+                        
+                        <div class="timeline-item">
+                            <i class="mdi mdi-upload bg-info-lighten text-info timeline-icon"></i>
+                            <div class="timeline-item-info">
+                                <a href="javascript:void(0);" class="text-info fw-bold mb-1 d-block">You sold an item</a>
+                                <small>Paul Burgess just purchased “Hyper - Admin Dashboard”!</small>
+                                <p class="mb-0 pb-2">
+                                    <small class="text-muted">5 minutes ago</small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <i class="mdi mdi-pencil bg-primary-lighten text-primary timeline-icon"></i>
+                            <div class="timeline-item-info">
+                                <a href="javascript:void(0);" class="text-primary fw-bold mb-1 d-block">Outreach Created</a>
+                                <small><b>{{ outreach.created_by}} </b>created outreach
+                                </small>
+                                <p class="mb-0 pb-2">
+                                    <small class="text-muted">{{ outreach.created_at|timesince }} ago</small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <i class="mdi mdi-pencil bg-primary-lighten text-primary timeline-icon"></i>
+                            <div class="timeline-item-info">
+                                <a href="javascript:void(0);" class="text-primary fw-bold mb-1 d-block">Outreach Created</a>
+                                <small><b>{{ outreach.created_by}} </b>created outreach
+                                </small>
+                                <p class="mb-0 pb-2">
+                                    <small class="text-muted">{{ outreach.created_at|timesince }} ago</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end timeline -->
+                </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 567px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 286px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></div> <!-- end slimscroll -->
+            </div>
+            <!-- end card-->
+        </div>
+        <!-- end col -->
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}

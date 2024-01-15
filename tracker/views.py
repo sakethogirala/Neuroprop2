@@ -32,9 +32,13 @@ class TrackerMain(ListView):
         context["property_type_choices"] = PROSPECT.PROPERTY_TYPE_CHOICES
         return context
 
-def tracker_detail(request, prospect_pk, document_type_pk):
+def tracker_detail(request, prospect_pk, document_type_pk=None):
     prospect = get_object_or_404(Prospect, pk = prospect_pk)
-    document_type = get_object_or_404(DocumentType, pk = document_type_pk)
+    if not document_type_pk:
+        print("get it")
+        document_type = get_object_or_404(DocumentType, pk = prospect.get_next_document_type())
+    else:
+        document_type = get_object_or_404(DocumentType, pk = document_type_pk)
 
     context = {
         "prospect": prospect,

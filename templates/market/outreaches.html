@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">My Outreach</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+
+                <div class="card-header bg-light-lighten border-top border-bottom border-light py-1 text-center">
+                    <p class="m-0"><b>{{ outreaches.count }}</b> Outreaches</p>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-nowrap table-hover mb-0">
+                            <tbody>
+                                {% for outreach in outreaches %}
+                                <tr style="cursor: pointer;" onclick="window.location.href = '{% url 'outreach_detail' outreach.uid %}'">
+                                    <td>
+                                        <h5 class="font-14 my-1 text-body">{{ outreach.name }}</h5>
+                                        <span class="text-muted font-13">Created {{ outreach.created_at|timesince }} ago</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Status</span> <br>
+                                        <span class="badge badge-{{ outreach.get_status_class }}-lighten">{{ outreach.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Created By</span>
+                                        <h5 class="font-14 mt-1 fw-normal">{{ outreach.created_by }}</h5>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Lender Count</span>
+                                        <h5 class="font-14 mt-1 fw-normal">{{ outreach.lenders.count }}</h5>
+                                    </td>
+                                    <td class="table-action" style="width: 90px;">
+                                        <a href="javascript: void(0);" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+                    </div> <!-- end table-responsive-->
+
+                </div> <!-- end card body-->
+            </div> <!-- end card -->
+        </div><!-- end col-->
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
+{% endblock %}

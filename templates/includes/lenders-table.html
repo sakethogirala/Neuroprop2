@@ -1,0 +1,27 @@
+<table class="table table-centered mb-0 table-hover">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Title</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lender in lenders %}
+        <tr endpoint="{% url 'render_offcanvas' %}" lender_pk="{{ lender.pk }}"
+            class="lender-row" contact="{{ lender.data.contact }}"
+            max_loan="{{ lender.data.max_loan }}" min_loan="{{ lender.data.min_loan }}"
+            max_ltv="{{ lender.data.max_ltv }}"
+            property_types="{{ lender.data.property_types|join:', ' }}"
+            states="{{ lender.data.states|join:', ' }}">
+            <td>
+                <input type="checkbox" class="lender-select" value="{{ lender.pk }}">
+            </td>
+            <td id="title">{{ lender.data.title }}</td>
+            <td>{{ lender.notes.all.count }}</td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+
+</table>
