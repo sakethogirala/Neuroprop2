@@ -7,14 +7,82 @@
 {% block content %}
 
 
-        <div class="container-fluid">
+<div class="container-fluid">
 
-            <!-- start page title -->
-            <div class="row">
-        
+    <!-- start page title -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Dashboard</h4>
             </div>
         </div>
+    </div>
+    <!-- end page title -->
 
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Projects</h4>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-nowrap table-hover mb-0">
+                            <tbody>
+                                {% for property in properties %}
+                                <tr style="cursor: pointer;" onclick="window.location.href = '{% url 'tracker-detail' property.pk %}'">
+                         
+                                    <td>
+                                        <h5 class="font-14 my-1"><a href="{% url 'tracker-detail' property.pk %}" class="text-body">{{ property.name }}</a></h5>
+                                        <span class="text-muted font-13">Created {{ property.created_at | timesince }} ago</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Status</span> <br>
+                                        <span class="badge badge-{{ property.get_progress_class }}-lighten">{{ property.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Assigned by</span>
+                                        <h5 class="font-14 mt-1 fw-normal"><a href="mailto:{{ property.created_by.email }}">{{ property.created_by.email }}</a></h5>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Doc Types Left</span>
+                                        <h5 class="font-14 mt-1 fw-normal">{{ property.get_todo_count }}</h5>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-13">Docs to Fix</span>
+                                        <h5 class="font-14 mt-1 fw-normal">{{ property.get_tofix_count }}</h5>
+                                    </td>
+                                    
+                                </tr>
+                                {% endfor %}
+
+                                
+                            </tbody>
+                        </table>
+                    </div> <!-- end table-responsive-->
+
+                </div> <!-- end card body-->
+            </div> <!-- end card -->
+        </div><!-- end col-->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Contact</h4>
+                </div>
+
+                <div class="card-body pt-0">
+
+                        <div>{% lorem %}</div>
+
+                </div> <!-- end card body-->
+            </div> <!-- end card -->
+        </div><!-- end col-->
+
+    </div>
+    <!-- end row-->
+
+    
+</div>
 {% endblock %}
 
 {% block js %}

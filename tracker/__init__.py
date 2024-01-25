@@ -3,7 +3,9 @@ class DOCUMENT_TYPE:
     STATUS_CHOICES = [
         ("not_uploaded", "Not Uploaded"),
         ("pending", "Pending"),
+        ("rejected", "Rejected"),
         ("approved", "Approved"),
+        ("hidden", "Hidden")
         
     ]
 
@@ -13,7 +15,6 @@ class DOCUMENT:
     STATUS_CHOICES = [
         ("not_uploaded", "Not Uploaded"),
         ("pending", "Pending"),
-        ("revising", "Revising"),
         ("approved", "Approved"),
         ("rejected", "Rejected")
     ]
@@ -65,7 +66,7 @@ class DOCUMENT:
         # Sponsor Documents
         ("Personal Financial Statement", "PersonalFinancialStatement", "Sponsor's net worth and liquidity."),
         ("Credit Report", "CreditReport", "Credit history and score."),
-        ("Resume or Bio", "Resume", "Experience in self-storage/related industries."),
+        ("Resume or Bio", "Resume", "Experience in leadership."),
 
         # Legal and Compliance Documents
         ("Title Report", "TitleReport", "Ownership and liens."),

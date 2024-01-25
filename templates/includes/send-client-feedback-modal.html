@@ -1,7 +1,7 @@
                                                     <div id="send-client-feedback-modal" class="modal fade"
                                                         tabindex="-1" role="dialog" aria-labelledby="send-to-modalLabel"
                                                         aria-hidden="true">
-                                                        <div class="modal-dialog">
+                                                        <div class="modal-dialog modal-lg">
                                                             <div class="modal-content">
                                                                 <div class="modal-header">
                                                                     <h4 class="modal-title" id="send-to-modalLabel">Send
@@ -14,6 +14,8 @@
                                                                     action="{% url 'send_client_feedback' %}">
                                                                     {% csrf_token %}
                                                                     <div class="modal-body">
+                                                                        <div class="row">
+                                                                            
                                                                         <label for="">AI Feedback Reference</label>
                                                                         <div id="document-feedback">{{ document.feedback }}</div>
                                                                         <div class="">
@@ -28,20 +30,22 @@
                                                                         </div>
                                                                         <input id="client_feedback_document_uid"
                                                                             type="hidden" name="document_uid" value="">
-                                                                    </div>
-                                                                    <div class="container-fluid mb-3">
-                                                                        <div class="row">
-                                                                            <!-- Approve Button -->
-                                                                            <div class="col-sm-6 mb-2 mb-sm-0">
-                                                                                <button type="submit" name="action" value="approve" class="btn btn-success w-100">Approve</button>
-                                                                            </div>
-                                                                    
-                                                                            <!-- Reject Button -->
-                                                                            <div class="col-sm-6">
-                                                                                <button type="submit" name="action" value="reject" class="btn btn-danger w-100">Reject</button>
+                                                                            <div class="my-3">
+                                                                                <div class="row">
+                                                                                    <!-- Approve Button -->
+                                                                                    <div class="col-sm-6 mb-2 mb-sm-0">
+                                                                                        <button type="submit" name="action" value="approve" class="btn btn-success w-100">Approve</button>
+                                                                                    </div>
+                                                                            
+                                                                                    <!-- Reject Button -->
+                                                                                    <div class="col-sm-6">
+                                                                                        <button type="submit" name="action" value="reject" class="btn btn-danger w-100">Reject</button>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
+
                                                                 </form>
                                                             </div><!-- /.modal-content -->
                                                         </div><!-- /.modal-dialog -->

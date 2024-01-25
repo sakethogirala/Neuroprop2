@@ -9,8 +9,8 @@ for (let i = 0; i < documents.length; i++) {
     let document_pk = document_element.getAttribute("document_pk");
     
     if (document_element.getAttribute("checked") == "False") {
-        document_element.querySelector("#document-status").style.display = "none";
-        document_element.querySelector("#document-loading").style.display = "block";
+        // document_element.querySelector("#document-status").style.display = "none";
+        // document_element.querySelector("#document-loading").style.display = "block";
         document_element.querySelector("#loading-warning").style.display = "block";
         poll_document(document_element);
         pollingIntervals[document_pk] = setInterval(poll_document, 10000, document_element);

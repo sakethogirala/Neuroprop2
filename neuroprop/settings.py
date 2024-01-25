@@ -151,6 +151,12 @@ OPENAI_ASSISTANT_UNDERWRITE_ID = "asst_YhmyQJYZshkwKaEijpTOF2f6"
 OPENAI_ASSISTANT_FILE_CHECK_ID = "asst_HzSXUPou4D394UmM3Fpeq38R"
 OPENAI_ASSISTANT_MASTER_ID = "asst_dbwU14WFoTAPSW8d4n48iwKw"
 
+OPENAI_DOC_FEEDBACK_ID = "asst_dbwU14WFoTAPSW8d4n48iwKw"
+# Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

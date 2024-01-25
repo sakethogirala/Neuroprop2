@@ -122,7 +122,10 @@ def get_data_from_api():
         url, 
         headers=headers,
     )
+    print("working...\n")
+    print(response.json)
     for res in response.json():
+        print(res)
         for url in res['urls']:
             response = requests.get(url['url'])
             filename = 'temp.parquet'

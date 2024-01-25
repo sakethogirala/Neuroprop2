@@ -26,3 +26,9 @@
     text-decoration: line-through;
     color: red;
 }
+
+#fileDropzone {
+    /* other styles */
+    transition: border-color 0.4s ease-in-out; /* Smooth transition for border color */
+  }
+  

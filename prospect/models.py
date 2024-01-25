@@ -25,6 +25,7 @@ class Address(models.Model):
 
 class Prospect(models.Model):
     uid = models.UUIDField(default=uuid.uuid4)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="prospects_owned", null=True, blank=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True ,blank=True)
     name = models.CharField(max_length=200)
     status = models.CharField(choices=PROSPECT.STATUS_CHOICES, max_length=100, default="pending")
@@ -67,6 +68,12 @@ class Prospect(models.Model):
     def get_todo_count(self):
         documents = self.document_types.all()
         return documents.count() - documents.filter(status = "approved").count()
+    
+    def get_tofix_count(self):
+        total = 0
+        for doc in self.document_types.all():
+            total += doc.get_tofix_count()
+        return total
     
     def get_next_document_type(self):
         document_type = self.document_types.all().first()

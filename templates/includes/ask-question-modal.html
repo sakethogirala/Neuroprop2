@@ -1,0 +1,34 @@
+                                                    <div id="ask-question-modal" class="modal fade"
+                                                        tabindex="-1" role="dialog" aria-labelledby="send-to-modalLabel"
+                                                        aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h4 class="modal-title" id="send-to-modalLabel">
+                                                                        Ask Question</h4>
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal"
+                                                                        aria-hidden="true"></button>
+                                                                </div>
+                                                                <form method="POST"
+                                                                    action="{% url 'ask_document_question' %}">
+                                                                    {% csrf_token %}
+                                                                    <div class="modal-body">
+                                                                        <div class="">
+                                                                            <label for="example-textarea"
+                                                                                class="form-label">
+                                                                                Question</label>
+                                                                            <textarea required name="question"
+                                                                                placeholder="This will be sent to our staff."
+                                                                                class="form-control mb-3"
+                                                                                id="question"
+                                                                                rows="5"></textarea>
+                                                                        </div>
+                                                                        <input id="question_document_uid"
+                                                                            type="hidden" name="document_uid" value="">
+                                                                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div><!-- /.modal-content -->
+                                                        </div><!-- /.modal-dialog -->
+                                                    </div><!-- /.modal -->

@@ -197,7 +197,21 @@
         <!--- End Sidemenu -->
 
         {% else %}
+        
+        <!--- Sidemenu -->
         <ul class="side-nav">
+
+            <li class="side-nav-title">Client Portal</li>
+
+
+            <li class="side-nav-item">
+                <a href="{% url 'index' %}" class="side-nav-link">
+                    <i class="uil-home"></i>
+                    <span>Homepage</span>
+                </a>
+            </li>
+            </ul>
+        <!-- <ul class="side-nav">
 
             <li class="side-nav-title">My Properties</li>
 
@@ -210,9 +224,7 @@
                     </div>
                     <div class="position-relative">
                         <span>{{ property.name }}</span>
-                        {% if property.are_client_notifications %}
-                        <span class="p-1 bg-danger rounded-circle position-absolute"></span>
-                        {% endif %}
+
                     </div>
 
                 </a>
@@ -220,7 +232,7 @@
             {% endfor %}
 
 
-        </ul>
+        </ul> -->
         {% endif %}
         <div class="clearfix"></div>
     </div>
