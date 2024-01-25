@@ -142,4 +142,5 @@ def main(data_file, samples):
         data=json.dumps(ansdf, default=str)
     )
     data.save()
+    os.remove(data_file)
     return predictions, propid
