@@ -48,7 +48,7 @@ def get_openai_document_feedback_status(self, document_pk):
         else:
             document.status = "rejected"
             document.client_feedback = feedback["feedback"]
-            send_rejected_upload.delay(document_pk)
+            # send_rejected_upload.delay(document_pk)
             document.notify_document_rejected()
 
         document.save()
@@ -81,8 +81,7 @@ def send_rejected_upload(document_pk):
     from django.template.loader import render_to_string
 
     document = Document.objects.get(pk = document_pk)
-    if document.rejection_email_sent:
-        return
+
     subject = f"NeuroProp - {document.name} Rejected"
     location = reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document.document_type.pk})
     link = "https://neuroprop.com" + location
@@ -100,5 +99,3 @@ def send_rejected_upload(document_pk):
             html_message=html,
             fail_silently=False
         )
-    document.rejection_email_sent = True
-    document.save()

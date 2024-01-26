@@ -52,7 +52,6 @@ class Document(models.Model):
     client_question = models.TextField(max_length=1000, null=True, blank=True)
     status = models.CharField(max_length=100, choices=DOCUMENT.STATUS_CHOICES, default="pending")
     overridden = models.BooleanField(default=False)
-    rejection_email_sent = models.BooleanField(default=False)
     smart_checked = models.BooleanField(default = False)
 
     openai_file_id = models.CharField(max_length=100, null=True, blank=True)
