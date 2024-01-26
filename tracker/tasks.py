@@ -57,7 +57,7 @@ def get_openai_document_feedback_status(self, document_pk):
     else:
         try:
             # Retry the task
-            self.retry(countdown=10, max_retries=10)
+            self.retry(countdown=20, max_retries=10)
         except MaxRetriesExceededError:
             print("max tried")
             # Handle the situation after max retries are exceeded
