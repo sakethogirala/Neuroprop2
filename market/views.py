@@ -8,6 +8,11 @@ import re
 import json
 from django.urls import reverse
 from django.template.loader import render_to_string
+from django.utils import timezone
+import openai
+from .tasks import openai_generate_outreach, send_outreach_emails
+
+client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
 @login_required
 def lender_map(request):
@@ -157,7 +162,7 @@ def create_outreach(request):
 
         selected_lenders = Lender.objects.filter(id__in=selected_lender_ids)
         prospect = get_object_or_404(Prospect, uid = request.POST.get("prospect_uid"))
-        new_outreach = Outreach.objects.create(
+        new_outreach, created = Outreach.objects.get_or_create(
             name=f'{prospect.name} Outreach',
             created_by=request.user,
             status='planned',
@@ -180,8 +185,78 @@ def outreaches(request):
 
 def outreach_detail(request, outreach_uid):
     outreach = get_object_or_404(Outreach, uid = outreach_uid)
+
     context = {
         "outreach": outreach,
         "prospect": outreach.prospect
     }
     return render(request, "market/outreach-detail.html", context)
+
+@login_required
+def remove_lender(request, outreach_pk, lender_pk):
+    outreach = get_object_or_404(Outreach, pk = outreach_pk)
+    lender = get_object_or_404(Lender, pk = lender_pk)
+    outreach.lenders.remove(lender)
+    return redirect(reverse("outreach_detail", kwargs={"outreach_uid": outreach.uid}))
+
+@login_required
+def generate_smart_outreach(request, outreach_pk):
+    print("working")
+    if request.user.staff_access():   
+        outreach = get_object_or_404(Outreach, pk = outreach_pk)
+        # file_ids = outreach.prospect.get_approved_documents()
+        # print("FILE IDS: ", file_ids)
+        # start_openai_smart_outreach.delay(outreach_pk)
+        outreach.email_content = None
+        openai_generate_outreach.delay(outreach_pk)
+        outreach.openai_outreach_time_start = timezone.now()
+        outreach.save()
+        return redirect(reverse("outreach_detail", kwargs={"outreach_uid": outreach.uid}))
+    
+@login_required
+def delete_outreach(request, outreach_pk):
+    print("working")
+    if request.user.staff_access():   
+        outreach = get_object_or_404(Outreach, pk = outreach_pk)
+        outreach.delete()
+        return redirect("outreaches")
+
+@login_required
+def send_outreach(request, outreach_pk):
+    if request.user.staff_access() and request.method == "POST":
+        outreach = get_object_or_404(Outreach, pk = outreach_pk)
+        data = request.POST
+        print(data)
+        subject = data.get("subject")
+        schedule_call_url = data.get("schedule-call-url")
+        outreach.email_subject = subject
+        outreach.schedule_call_url = schedule_call_url
+        outreach.status = "in_progress"
+        outreach.save()
+        send_outreach_emails.delay(outreach_pk)
+        messages.success(request, "Emails are being sent now...")
+        return redirect(reverse("outreach_detail", kwargs={"outreach_uid": outreach.uid}))
+    
+def save_outreach(request, outreach_pk):
+    outreach = get_object_or_404(Outreach, pk = outreach_pk)
+    print("saving outreach")
+    data = request.POST
+    print(data)
+    outreach.email_subject = data.get("email-subject")
+    outreach.schedule_call_url = data.get("schedule-call-url")
+    outreach.email_content = data.get("email-content")
+    outreach.save()
+    return HttpResponse("success", status = "200")
+
+def view_outreach_preview(request, outreach_pk):
+    print("working...")
+    if request.user.staff_access():
+        print("hello")
+        outreach = get_object_or_404(Outreach, pk = outreach_pk)
+        body_html = render_to_string("emails/outreach-content.html", {
+        "outreach": outreach,
+    })
+        print(body_html)
+        return JsonResponse({"html": body_html}, safe=False)
+
+        

@@ -1,16 +1,25 @@
+{% extends 'base.html' %}
 {% load static %}
 
-<div id="add-new-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="standard-modalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="standard-modalLabel">Create Prospect</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+{% block content %}
+{% load static %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">New Prospect</h4>
             </div>
-            <div class="modal-body">
-                <form action="{% url 'create_prospect' %}" method="post">{% csrf_token %}                           
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                <form action="{% url 'create_prospect' %}" method="post">{% csrf_token %}
                     <div class="mb-3">
-                        <input required name="name" type="text" placeholder="Name (Ex: 123 Rainbow Road)*" class="form-control">
+                        <input required name="name" type="text" placeholder="Project Name"
+                            class="form-control">
                     </div>
                     <div class="mb-3">
                         {% include 'includes/address-field.html' %}
@@ -25,7 +34,7 @@
                             <option value="{{ key }}">{{ value }}</option>
                             {% endfor %}
                         </select>
-                        
+
                     </div>
                     <div class="mb-3">
                         <select required id="property-type" class="form-select form-control" name="property-type">
@@ -35,12 +44,14 @@
                             {% endfor %}
                         </select>
                     </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Create</button>
-            </div>
-        </form>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+            <button type="submit" class="btn btn-primary w-100">Create</button>
+            </form>
+        </div>
+
+        </div>
+        </div> <!-- end card-->
+    </div>
+</div>
+</div>
+
+{% endblock %}

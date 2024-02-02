@@ -3,6 +3,7 @@ from django.conf import settings
 from . import *
 import uuid
 from prospect.models import Prospect
+import json
 class Lender(models.Model):
     title = models.CharField(max_length = 255)
     data = models.JSONField(default=dict)
@@ -46,6 +47,16 @@ class Outreach(models.Model):
     status = models.CharField(max_length=100, choices=OUTREACH.STATUS_CHOICES, default="planned")
     description = models.TextField(blank=True, null=True)
 
+    email_content = models.TextField(null=True, blank=True)
+    email_subject = models.TextField(null=True, blank=True)
+    email_sent_start = models.DateTimeField(null=True, blank=True)
+    email_sent_end = models.DateTimeField(null=True, blank=True)
+    schedule_call_url = models.URLField(max_length=200, null=True, blank=True)
+
+    openai_outreach_thread_id = models.CharField(max_length=100, null=True, blank=True)
+    openai_outreach_run_id = models.CharField(max_length=100, null=True, blank=True)
+    openai_outreach_time = models.DateTimeField(null=True, blank=True)
+    openai_outreach_time_start = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return self.name
     
@@ -56,3 +67,32 @@ class Outreach(models.Model):
             return "info"
         if self.status == "completed":
             return "success"
+
+    def openai_get_result(self, client, thread_id, run_id):
+        run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
+        print(run.status)
+        if run.status == "requires_action":
+            print("REQUIRED ACTION \n")
+            call_id = run.required_action.submit_tool_outputs.tool_calls[0].id
+            output = json.loads(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments)
+            print(output)
+            return output
+        if run.status == "completed":
+            messages = client.beta.threads.messages.list(thread_id=thread_id)
+            for message in messages:
+                value = message.content[0].text.value
+                return value
+        return False
+
+# # Example OpenAI Python library request
+# MODEL = "gpt-3.5-turbo"
+# response = client.chat.completions.create(
+#     model=MODEL,
+#     messages=[
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {"role": "user", "content": "Knock knock."},
+#         {"role": "assistant", "content": "Who's there?"},
+#         {"role": "user", "content": "Orange."},
+#     ],
+#     temperature=0,
+# )

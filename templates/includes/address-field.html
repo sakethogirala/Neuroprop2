@@ -1,0 +1,25 @@
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/address-field.css' %}">
+{% endblock %}
+
+{% block content %}
+
+
+        <!-- Avoid the word "address" in id, name, or label text to avoid browser autofill from conflicting with Place Autocomplete. Star or comment bug https://crbug.com/587466 to request Chromium to honor autocomplete="off" attribute. -->
+        <input placeholder="Start typing address..." class="form-control" id="address" name="address" required autocomplete="off" />
+        <input placeholder="Apartment, unit, suite, or floor #" class="form-control" id="address2" name="address2" />
+        <input placeholder="City" class="form-control" id="locality" name="locality" required />
+        <input placeholder="State" class="form-control" id="state" name="state" required />
+        <input placeholder="Postal Code" class="form-control" id="postcode" name="postcode" required />
+        <input placeholder="Country" class="form-control" id="country" name="country" required />
+
+{% endblock %}
+
+{% block js %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAjzSqYKYNaBs-XM7fnh1-KrvBfy-Cwpc&callback=initAutocomplete&libraries=places&v=weekly" defer></script>
+    <script src="{% static 'js/address-field.js' %}"></script>
+{% endblock %}

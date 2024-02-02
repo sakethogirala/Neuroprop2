@@ -6,7 +6,7 @@ import os
 from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger
 from .tasks import *
-# Create your views here.
+
 def refresh_data(request):
     filename = get_data_from_api()
     main.delay(filename, samples=10000000)

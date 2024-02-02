@@ -11,15 +11,20 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="mt-0"><a href="{% url 'tracker-detail' prospect.pk  %}">{{ prospect.name }}</a></h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class=""><a href="{% url 'tracker-detail' prospect.pk %}">{{ prospect.name }}</a></h3>
                         <!-- project title-->
+                        <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }}">
+                            {{ prospect.get_status_display }}</div>
                     </div>
-                    <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }} mb-3">
-                        {{ prospect.get_status_display }}</div>
+
+                        <div>
+                            <h5>Address</h5>
+                            {{ prospect.address.get_address|linebreaks }}
+                        </div>
 
                     <div class="row">
                         <div class="col-md-4">
@@ -42,34 +47,65 @@
                         </div>
                     </div>
 
-                    <div id="tooltip-container">
-                        <h5>Sent To:</h5>
-                        <div class="d-flex align-items-center">
-                            <div>
-                                {% for user in prospect.users.all %}
-                                    {% if forloop.last %}
-                                    <a class="remove-user" href="{% url 'remove-user' %}?prospect_uid={{ prospect.uid }}&target_user_pk={{ user.pk }}">{{ user.email}}</a>
-                                    {% else %}
-                                    <a class="remove-user" href="{% url 'remove-user' %}?prospect_uid={{ prospect.uid }}&target_user_pk={{ user.pk }}">{{ user.email}}, </a>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="ms-auto">
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#send-to-modal">Add Users</button>
-                            </div>
-                        </div>
-                    </div>
-
                 </div> <!-- end card-body-->
 
             </div> <!-- end card-->
             <div class="card">
                 <div class="d-flex card-header justify-content-between align-items-center">
+                    <h4 class="header-title">Email Info</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="mb-3">
+                            <label for="">Email Subject</label>
+                            <input id="subject" required name="subject" type="text" placeholder="Email Subject" class="form-control" value="{{ outreach.email_subject }}">
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5>Email Content</h5>
+                                <a href="{% url 'generate_smart_outreach' outreach.pk %}" class="btn btn-sm btn-primary my-1">Generate Smart Email</a>
+                            </div>
+                        {% if outreach.email_content %}
+                                <textarea id="email-content" rows="20" name="email_content" class="w-100 form-control">{{ outreach.email_content|safe }}</textarea>
+                        {% else %}
+                        {% if outreach.openai_outreach_time_start %}
+                        <p id="loading" class="placeholder-glow">
+                            <span class="placeholder col-12"></span>
+                            <span class="placeholder col-12"></span>
+                            <span class="placeholder col-12"></span>
+                            <span class="placeholder col-4"></span>
+                        </p>
+                        {% else %}
+                        <div class="text-center text-muted">Please generate a smart email.</div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="">Schedule call URL (optional)</label>
+                        <input value="{{ outreach.schedule_call_url }}" id="schedule-call-url" name="schedule-call-url" type="url" placeholder="URL to schedule a call, eg: Calendy link" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <button id="send-outreach-btn" class="btn btn-primary w-100">Send Emails <i class="mdi mdi-airplane ms-1"></i></button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="d-flex card-header justify-content-between align-items-center">
                     <h4 class="header-title">Lender List</h4>
-                    <a href="javascript:void(0);" class="btn btn-primary">Send Emails <i class="mdi mdi-airplane ms-1"></i></a>
                 </div>
                 <div class="card-body pt-0">
+                    <div class="float-end text-muted">
+                    {% if outreach.email_sent_start %}
+                    <div>Email sequences started at {{ outreach.email_sent_start }}</div>
+                    {% endif %}
+                    {% if outreach.email_sent_start %}
+                    <div>Email sequences finished at {{ outreach.email_sent_end }}</div>
+                    {% endif %}
+                    </div>
+                    
+                </div>
                     <div class="table-responsive">
                         <table class="table table-centered table-nowrap table-hover mb-0">
                             <tbody>
@@ -77,19 +113,15 @@
                                 <tr>
                                     <td>
                                         <h5 class="font-14 my-1 fw-normal">{{ lender.title }}</h5>
-                                        <span class="text-muted font-13">07 April 2018</span>
+                                        <span class="text-muted font-13">Name</span>
                                     </td>
                                     <td>
-                                        <h5 class="font-14 my-1 fw-normal">$79.49</h5>
-                                        <span class="text-muted font-13">Price</span>
+                                        <h5 class="font-14 my-1 fw-normal">{{ lender.data.contact }}</h5>
+                                        <span class="text-muted font-13">Email</span>
                                     </td>
-                                    <td>
-                                        <h5 class="font-14 my-1 fw-normal">82</h5>
-                                        <span class="text-muted font-13">Quantity</span>
-                                    </td>
-                                    <td>
-                                        <h5 class="font-14 my-1 fw-normal">$6,518.18</h5>
-                                        <span class="text-muted font-13">Amount</span>
+                                    <td class="table-action">
+                                        <a href="{% url 'edit_lender' lender.pk %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
+                                        <a href="{% url 'remove_lender' outreach.pk lender.pk %}" class="action-icon"> <i class="mdi mdi-delete"></i></a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -100,51 +132,74 @@
             </div> <!-- end card-->
         </div> <!-- end col-->
 
-        <div class="col-lg-3">
-            <div class="card">
-                <div class="d-flex card-header justify-content-between align-items-center">
-                    <h4 class="header-title">Activity</h4>
-                </div>
-
-                <div class="card-body py-0 mb-3" data-simplebar="init" style="max-height: 403px;"><div class="simplebar-wrapper" style="margin: 0px -24px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 0px 24px;"> 
-                    <div class="timeline-alt py-0">
-
-
-                        <div class="timeline-item">
-                            <i class="mdi mdi-pencil bg-primary-lighten text-primary timeline-icon"></i>
-                            <div class="timeline-item-info">
-                                <a href="javascript:void(0);" class="text-primary fw-bold mb-1 d-block">Outreach Created</a>
-                                <small><b>{{ outreach.created_by}} </b>created outreach
-                                </small>
-                                <p class="mb-0 pb-2">
-                                    <small class="text-muted">{{ outreach.created_at|timesince }} ago</small>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <i class="mdi mdi-pencil bg-primary-lighten text-primary timeline-icon"></i>
-                            <div class="timeline-item-info">
-                                <a href="javascript:void(0);" class="text-primary fw-bold mb-1 d-block">Outreach Created</a>
-                                <small><b>{{ outreach.created_by}} </b>created outreach
-                                </small>
-                                <p class="mb-0 pb-2">
-                                    <small class="text-muted">{{ outreach.created_at|timesince }} ago</small>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end timeline -->
-                </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 567px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 286px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></div> <!-- end slimscroll -->
-            </div>
-            <!-- end card-->
-        </div>
         <!-- end col -->
 
     </div>
 </div>
-
+{% include 'market/send-outreach-modal.html' %}
 {% endblock %}
 
 {% block js %}
+<script>
+let loading = document.getElementById("loading");
+if (loading) {
+    console.log("loading");
+    var refreshInterval = 10000; // 5 seconds
+    setTimeout(function() {
+        window.location.reload();
+    }, refreshInterval);
 
+} else {
+    console.log("not loading");
+}
+
+</script>
+<script>
+    document.getElementById('send-outreach-btn').addEventListener('click', function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let saveEndpoint = `{% url 'save_outreach' outreach.pk %}`;
+    let previewEndpoint = `{% url 'view_outreach_preview' outreach.pk %}`;
+    
+    // Data to be sent (adjust according to your form structure)
+    let formData = new FormData();
+    formData.append('email-subject', document.getElementById('subject').value);
+    formData.append('email-content', document.getElementById("email-content").value);
+    formData.append("schedule-call-url", document.getElementById("schedule-call-url").value);
+    // Add other form data as needed
+
+    // First, send the save_outreach POST request
+    fetch(saveEndpoint, {
+        method: 'POST',
+        headers: {
+                "X-CSRFToken": getCookie('csrftoken'),
+            },
+        body: formData
+    })
+    .then(data => {
+        console.log('Save Outreach Response:', data);
+        // After saving, proceed to fetch the email preview
+        fetchEmailPreview(previewEndpoint);
+    })
+    .catch(error => {
+        console.error('Error saving outreach:', error);
+    });
+});
+
+// Function to fetch email preview
+function fetchEmailPreview(endpoint) {
+    fetch(endpoint)
+    .then(response => response.json())
+    .then(data => {
+        let modalBody = document.getElementById('email-preview');
+        modalBody.innerHTML = data.html;
+        var myModal = new bootstrap.Modal(document.getElementById('send-outreach-modal'));
+        myModal.show(); 
+    })
+    .catch(error => {
+        console.error('Error fetching email preview:', error);
+    });
+}
+
+</script>
 {% endblock %}

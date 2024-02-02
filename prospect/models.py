@@ -89,3 +89,31 @@ class Prospect(models.Model):
         if self.document_types.filter(client_notifications=True).exists():
             return True
         return False
+    
+    def get_approved_documents(self):
+        list = []
+        for doc_type in self.document_types.all():
+            for doc in doc_type.documents.filter(status = "approved"):
+                list.append(doc.openai_file_id)
+        return list
+    
+    def get_approved_documents_info(self):
+        messages = []
+        for doc_type in self.document_types.all():
+            for doc in doc_type.documents.filter(status = "approved"):
+                messages.append({"role": "system", "content": f"Document {doc.name} underwriting information: {doc.feedback}"})
+        return messages
+    
+    def get_general_info(self):
+        return f"{self.get_property_type_display()} {self.get_purpose_display()} for ${self.amount} located at {self.address.get_address()}"
+    
+
+def get_image_path(instance, filename):
+    return f"documents/{instance.prospect.uid}/{filename}"
+
+class Photo(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4)
+    prospect = models.ForeignKey(Prospect, related_name = "photos", on_delete = models.CASCADE)
+    image = models.ImageField(upload_to=get_image_path)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="uploaded_photos")
+    created_at = models.DateTimeField(auto_now_add=True)

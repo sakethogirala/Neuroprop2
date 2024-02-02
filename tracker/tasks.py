@@ -61,16 +61,11 @@ def get_openai_document_feedback_status(self, document_pk):
         except MaxRetriesExceededError:
             print("max tried")
             # Handle the situation after max retries are exceeded
-            handle_max_retries_exceeded(document_pk)
+            document.smart_checked = True
+            document.status = "pending"
+            document.feedback = "AI was not able to analyze the file."
+            document.save()
 
-def handle_max_retries_exceeded(document_pk):
-    from .models import Document
-    from django.utils import timezone
-    document = Document.objects.get(pk=document_pk)
-    document.smart_checked = True
-    document.status = "pending"
-    document.feedback = "AI was not able to analyze the file."
-    document.save()
 
 @shared_task
 def send_rejected_upload(document_pk):

@@ -1,0 +1,23 @@
+{% load static %}
+
+<div id="send-outreach-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="standard-modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="standard-modalLabel">Email Preview</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'send_outreach' outreach.pk %}" method="post">{% csrf_token %}
+                    <input type="hidden" name="outreach_pk" value="{{ outreach.pk }}">
+                    <div id="email-preview"></div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button onclick="if (document.getElementById('sent-before')){return confirm('Are you sure you want to send again?')}" type="submit" class="btn btn-primary">Send Emails</button>
+            </div>
+        </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

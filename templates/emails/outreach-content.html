@@ -1,0 +1,9 @@
+{% load static %}
+<img width="300px" src="cid:preview"/>
+<div>
+{{ outreach.email_content|linebreaks}}
+</div>
+{% if outreach.schedule_call_url %}
+<div>Here's <a href="{{ outreach.schedule_call_url}}">my calendar</a> to book a call.</div>
+{% endif %}
+<img width="300px" src="cid:googlemaps"/>

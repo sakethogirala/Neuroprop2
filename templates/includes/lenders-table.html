@@ -15,7 +15,7 @@
             property_types="{{ lender.data.property_types|join:', ' }}"
             states="{{ lender.data.states|join:', ' }}">
             <td>
-                <input type="checkbox" class="lender-select" value="{{ lender.pk }}">
+                <input type="checkbox" class="lender-select form-check-input" value="{{ lender.pk }}">
             </td>
             <td id="title">{{ lender.data.title }}</td>
             <td>{{ lender.notes.all.count }}</td>

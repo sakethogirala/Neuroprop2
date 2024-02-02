@@ -20,12 +20,17 @@
             <!-- project card -->
             <div class="card d-block">
                 <div id="detail-body" class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="mt-0">{{ prospect.name }}</h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="">{{ prospect.name }}</h3>
                         <!-- project title-->
+                        <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }}">
+                            {{ prospect.get_status_display }}</div>
                     </div>
-                    <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }} mb-3">
-                        {{ prospect.get_status_display }}</div>
+
+                    <div>
+                        <h5>Address</h5>
+                        {{ prospect.address.get_address|linebreaks }}
+                    </div>
 
                     <div class="row">
                         <div class="col-md-4">
@@ -88,8 +93,9 @@
                         {% if pipeline %}
                         {% for document in pipeline %}
                         <div class="d-flex align-items-center">
-                            <a class="fw-bold" href="{% url 'tracker-detail' prospect.pk document.document_type.pk %}">{{ document.name }}</a>
-                                <span class="status bg-{{ document.get_status_class }} ms-auto"></span>
+                            <a class="fw-bold"
+                                href="{% url 'tracker-detail' prospect.pk document.document_type.pk %}">{{ document.name }}</a>
+                            <span class="status bg-{{ document.get_status_class }} ms-auto"></span>
                         </div>
                         <div class="text-muted">{{ document.uploaded_by.email }} at {{ document.created_at }}</div>
                         <hr>
@@ -160,8 +166,9 @@
 
                         {% else %}
                         <h4>
-                        <span class="badge badge-{{ current_document_type.get_status_class }}-lighten rounded-pill">{{ current_document_type.get_status_display }}</span>
-                    </h4>
+                            <span
+                                class="badge badge-{{ current_document_type.get_status_class }}-lighten rounded-pill">{{ current_document_type.get_status_display }}</span>
+                        </h4>
                         {% endif %}
 
                     </div>
@@ -225,7 +232,7 @@
                                         {% if is_staff %}
 
                                         {% if document.feedback %}
-                                        
+
                                         <h6 class="mb-0">AI Feedback (Staff Only)</h6>
                                         <div id="ai-feedback" class="my-1 text-muted">{{ document.feedback|safe }}</div>
 
@@ -240,8 +247,7 @@
                                         {% endif %}
                                         <div class="mt-2 mb-1 ms-auto">
                                             <a ai-feedback="{{ document.feedback|safe }}"
-                                                document_uid="{{ document.uid }}"
-                                                url="{{ document.file.url }}"
+                                                document_uid="{{ document.uid }}" url="{{ document.file.url }}"
                                                 class="btn btn-primary send-client-feedback">Send Feedback</a>
                                         </div>
                                         <div class="d-flex my-2 align-items-center">
@@ -264,10 +270,15 @@
                                         {% endif %}
                                         {% if document.status == 'rejected' %}
                                         <div class="btn-group mt-2" role="group" aria-label="Basic example">
-                                            <a onclick="clickUploadNew()" type="button" class="btn btn-secondary">Upload New Document</a>
-                                            <a document_uid="{{ document.uid }}" type="button" class="btn btn-secondary question-btn">Ask Question</a>
-                                            <a type="button" onclick="return confirm('Are you sure you want to override this?')" href="{% url 'override-document-check' document.uid %}" class="btn btn-secondary">Disagree? Override.</a>
-                                          </div>
+                                            <a onclick="clickUploadNew()" type="button" class="btn btn-secondary">Upload
+                                                New Document</a>
+                                            <a document_uid="{{ document.uid }}" type="button"
+                                                class="btn btn-secondary question-btn">Ask Question</a>
+                                            <a type="button"
+                                                onclick="return confirm('Are you sure you want to override this?')"
+                                                href="{% url 'override-document-check' document.uid %}"
+                                                class="btn btn-secondary">Disagree? Override.</a>
+                                        </div>
                                         {% endif %}
                                         <div class="d-flex my-2 align-items-center">
                                             <div class="text-muted">Uploaded by {{ document.uploaded_by }}</div>
@@ -381,8 +392,7 @@
     document.getElementById('pipeline-body').style.maxHeight = detailHeight + 'px';
 </script>
 <script>
-
-var dropzones = document.getElementsByClassName("dropzone");
+    var dropzones = document.getElementsByClassName("dropzone");
     console.log(dropzones);
 
     for (let i = 0; i < dropzones.length; i++) {
@@ -415,23 +425,47 @@ var dropzones = document.getElementsByClassName("dropzone");
         });
         console.log("Dropzone initialized: ", dropzone);
     }
-
 </script>
 <script>
-function clickUploadNew(){
-    let dropzone = document.getElementById('fileDropzone');
-    
-    // Smooth scroll to the dropzone element
-    dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    function clickUploadNew() {
+        let dropzone = document.getElementById('fileDropzone');
 
-    // Change border color to red
-    dropzone.style.borderColor = 'red';
-    
-    // Set a timeout to revert the border color back to its original state
-    setTimeout(() => {
-        dropzone.style.borderColor = ''; // Assuming '' is the original color, adjust if necessary
-    }, 2000); // 2000ms delay, adjust as needed
-}
+        // Smooth scroll to the dropzone element
+        dropzone.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
 
+        // Change border color to red
+        dropzone.style.borderColor = 'red';
+
+        // Set a timeout to revert the border color back to its original state
+        setTimeout(() => {
+            dropzone.style.borderColor = ''; // Assuming '' is the original color, adjust if necessary
+        }, 2000); // 2000ms delay, adjust as needed
+    }
 </script>
 {% endblock %}
+
+[{'role': 'system', 'content': 'Project Details: Hotel Refinance for 10000.00 located at 14 Keystone
+St\nBoston, MA 02132-5126 \nUnited States'}, {'role': 'user', 'content': "Write an email using the aforementioned
+property information to customize the following template framework: \n Description/ The “Ask”: Include a succinct
+statement regarding the financial ask, and a brief description of the property type (e.g., commercial, residential,
+mixed-use) and location.\n Unique Selling Point: Highlight what makes this property a good investment (e.g., location,
+high rental demand).\n\n Investment Highlights:\n\n Key Features: Detail the property's major features such as square
+footage, occupancy rates, and unique amenities.\n Strategic Location: Located [insert distance] from [notable landmark
+or area, e.g., downtown], and [insert distance] from [another key landmark, e.g., a major university hospital]. This
+prime positioning ensures high visibility/accessibility, benefiting from [mention any specific advantages, e.g., heavy
+foot traffic, proximity to business hubs, etc.].\n Financials: Provide a snapshot of financial details, including
+projected ROI and other relevant financial metrics.\n Market Trends: Include insights on market trends, supported by
+visual comps, to underline the investment potential in the context of current and forecasted market conditions.\n\n
+Sponsor Profile:\n\n Experience and Track Record: Briefly outline the borrower's experience in this specific property
+type, highlighting any notable successes or key projects.\n Financial Stability: Mention the borrower's financial
+strength and stability, supported by relevant metrics or achievements.\n Online Presence: For a more in-depth look at
+the borrower's professional background and achievements, visit their [Website](insert website link) and [LinkedIn
+Profile](insert LinkedIn profile link).\n Reputation: Summarize any industry recognitions, awards, or testimonials that
+underscore the borrower's reputation in the market.\n\n Next Steps: \n\n Encourage the lender to express interest, pass,
+or request more detailed information.\n Contact Details: Provide your direct contact information for follow-up.\n
+Schedule a meeting directly on my calendar to discuss details and answer any questions. Click here [insert Calendly
+link] to select a time that works best for you.\n\n We look forward to hearing from you. \n\n . Only return the email
+content and nothing else. Never return errors or reveal you are an AI."}]

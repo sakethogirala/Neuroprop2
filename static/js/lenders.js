@@ -1,17 +1,22 @@
 let lenders = document.getElementsByClassName("lender-row");
 let offcanvas_toggle = document.getElementById("toggle_offcanvas");
 let active_lender = null;
+let checkboxes = document.querySelectorAll('.lender-row .lender-select');
 
 resetLenderTable();
 
 function resetLenderTable(){
     for(let i = 0; i < lenders.length; i++){
         lenders[i].addEventListener("click", function(e){
-            console.log(this)
-            console.log(this.querySelector("#title").innerHTML);
             show_offcanvas(this);
         })
     }
+    for(let i = 0; i < checkboxes.length; i++){
+        checkboxes[i].addEventListener("click", function(e){
+            e.stopPropagation();
+        })
+    }
+
 }
 
 
@@ -35,7 +40,6 @@ function change_data(lender){
     fetch(`${endpoint}?lender_pk=${lender_pk}`)
         .then(response => response.text())
         .then(html => {
-            console.log(html)
             // Insert the fetched HTML into the offcanvas body
             document.getElementById("offcanvas-body").innerHTML = html;
         })

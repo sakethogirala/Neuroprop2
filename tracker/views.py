@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView
 from django.core.files.storage import FileSystemStorage
 from .models import Prospect, Document, DocumentType
+from prospect.models import Address
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
@@ -24,6 +25,7 @@ client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
 class TrackerMain(ListView):
     model = Prospect
+    ordering = ["-created_at"]
     paginate_by = 20  # if pagination is desired
     template_name = "tracker-main.html"
     def get_context_data(self, **kwargs):
@@ -156,6 +158,7 @@ def create_prospect(request):
     if request.method == "POST":
         data = request.POST
         print(data)
+        address = Address.objects.create(address=data.get("address"), address2=data.get("address2"), city=data.get("locality"), state=data.get("state"), postal_code=data.get("postcode"), country=data.get("country"))
         name = data.get("name")
         purpose = data.get("purpose")
         property_type= data.get("property-type")
@@ -165,12 +168,17 @@ def create_prospect(request):
             name = name,
             purpose = purpose,
             property_type = property_type,
-            amount = amount
+            amount = amount,
+            address = address
         )
         prospect.users.add(request.user)
         messages.success(request, "Prospect created!")
         return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
-    return HttpResponse("error", status = "404")
+    context = {
+        "purpose_choices": PROSPECT.PURPOSE_CHOICES,
+        "property_type_choices": PROSPECT.PROPERTY_TYPE_CHOICES
+    }
+    return render(request, "create-prospect.html", context)
 
 @login_required
 def delete_prospect(request, prospect_uid):
