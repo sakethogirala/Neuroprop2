@@ -7,14 +7,16 @@ class OUTREACH:
     PROPERTY_TYPES = [
         ("MF", "Multifamily"),
         ("RT", "Retail"),
-        ("HC", "Health Care"),
+        ("HC", "Healthcare"),
         ("IN", "Industrial"),
         ("WH", "Warehouse"),
         ("MH", "Mobile Home Park"),
         ("OF", "Office"),
         ("MU", "Mixed Use"),
         ("LO", "Lodging"),
-        ("SS", "Self Storage"),
+        ("HO", "Hospitality"),
+        ("ST", "Student Housing"),
+        ("SS", "Self-Storage"),
         ("OT", "Other"),
         ("SE", "Securities"),
         ("CH", "Cooperative Housing")
@@ -38,11 +40,8 @@ class OUTREACH:
                 Schedule a meeting directly on my calendar to discuss details and answer any questions.
 
                 We look forward to hearing from you. 
-
                 """
     EMAIL_EXAMPLE = """
-Hi Clay, 
- 
 We haven't met - but would like to kick off a relationship and trade some of our incoming deal flow. 
  
 Currently, we have an exclusive investment opportunity (construction) in a high-potential self-storage project in Morganton, NC, developed in partnership between S3 Partners and MPIG. This venture represents not just a sound investment, but a unique opportunity for a comprehensive financing partnership on future deals with the group.  

@@ -9,7 +9,7 @@
     <tbody>
         {% for lender in lenders %}
         <tr endpoint="{% url 'render_offcanvas' %}" lender_pk="{{ lender.pk }}"
-            class="lender-row" contact="{{ lender.data.contact }}"
+            class="lender-row" contact_name="{{ lender.data.contact_name }}" contact_email="{{ lender.data.contact_email }}"
             max_loan="{{ lender.data.max_loan }}" min_loan="{{ lender.data.min_loan }}"
             max_ltv="{{ lender.data.max_ltv }}"
             property_types="{{ lender.data.property_types|join:', ' }}"

@@ -21,10 +21,15 @@
             <div class="card d-block">
                 <div id="detail-body" class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="">{{ prospect.name }}</h3>
+                        <div>
+                            <h3 class="">{{ prospect.name }}</h3>
+                            <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }}">
+                                {{ prospect.get_status_display }}</div>
+                        </div>
                         <!-- project title-->
-                        <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }}">
-                            {{ prospect.get_status_display }}</div>
+                        {% if is_staff %}
+                        <a class="btn btn-primary" href="{% url 'edit_propsect' prospect.pk %}">Edit</a>
+                        {% endif %}
                     </div>
 
                     <div>
@@ -51,6 +56,34 @@
                                 <p>${{ prospect.amount }}</p>
                             </div>
                         </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <h5>Contact</h5>
+                                <div>{{ prospect.created_by.name }}</div>
+                                <div><a
+                                        href="mailto: {{prospect.created_by.email }}">{{ prospect.created_by.email }}</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% if is_staff %}
+                        <div class="col-12 col-lg-6">
+                            <div class="mb-3">
+                                <h5>Context</h5>
+                                <div name="context" id="">{{ prospect.context|linebreaks }}</div>
+                                <small class="text-muted">(Client does not see)</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <div class="mb-3">
+                                <h5>Client Onboard Info</h5>
+                                {% for key, value in prospect.client_scenario.items %}
+                                <div><b>{{ key }}:</b> {{ value }}</div>
+                                {% endfor %}
+                                <small class="text-muted">(Client does not see)</small>
+                            </div>
+                        </div>
+
+                        {% endif %}
                     </div>
 
                     <div id="tooltip-container">
@@ -84,12 +117,38 @@
         <div id="" class="col-12 col-lg-4">
             <div class="card">
                 <div class="card-body">
+                    <h4 class="header-title">Progress</h4>
+                    <div class="mb-3" id="progress"></div>
+                    <div class="d-flex justify-content-between">
+                        <div class="text-center">
+                       
+                            <i class="mdi mdi-checkbox-blank-circle widget-icon rounded-circle bg-success-lighten text-success"></i>
+                            <div class="my-1">Approved</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="mdi mdi-checkbox-blank-circle widget-icon rounded-circle bg-secondary-lighten text-secondary"></i>
+                            <div class="my-1">Awaiting Upload</div>
+                        </div>
+                        <div class="text-center">
+                            
+                            <i class="mdi mdi-checkbox-blank-circle widget-icon rounded-circle bg-warning-lighten text-warning"></i>
+                            <div class="my-1">Pending</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="mdi mdi-checkbox-blank-circle widget-icon rounded-circle bg-danger-lighten text-danger"></i>
+                            <div class="my-1">Rejected</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
                     {% if is_staff %}
                     <h4 class="header-title">Pipeline</h4>
                     {% else %}
                     <h4 class="header-title">Conditions</h4>
                     {% endif %}
-                    <div data-simplebar style="max-height: 250px; height: 250px;">
+                    <div data-simplebar style="max-height: 200px; height: 200px;">
                         {% if pipeline %}
                         {% for document in pipeline %}
                         <div class="d-flex align-items-center">
@@ -229,6 +288,12 @@
                                         <div style="display: none;" id="loading-warning" class="text-muted mt-2" id="">
                                             File is being smart analyzed. We will notify you if there are any issues.
                                         </div>
+                                        {% if current_document_type.is_image %}
+                                        <div class="text-center">
+                                            <img style="height: 300px;" src="{{ document.file.url }}" class="img-fluid"
+                                                alt="">
+                                        </div>
+                                        {% endif %}
                                         {% if is_staff %}
 
                                         {% if document.feedback %}
@@ -280,6 +345,7 @@
                                                 class="btn btn-secondary">Disagree? Override.</a>
                                         </div>
                                         {% endif %}
+
                                         <div class="d-flex my-2 align-items-center">
                                             <div class="text-muted">Uploaded by {{ document.uploaded_by }}</div>
                                             {% if document.overridden %}
@@ -393,19 +459,24 @@
 </script>
 <script>
     var dropzones = document.getElementsByClassName("dropzone");
+    let is_image = "{{ current_document_type.is_image }}"
+    console.log("is image: ", is_image);
+    console.log(typeof (is_image))
     console.log(dropzones);
+    let dropzone;
 
     for (let i = 0; i < dropzones.length; i++) {
         console.log("Initializing Dropzone");
-
-        let dropzone = new Dropzone(dropzones[i], {
-            addedfile: file => {
-                console.log(file);
-            },
-            acceptedFiles: "application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
-        });
-
-
+        if (is_image == "True") {
+            dropzone = new Dropzone(dropzones[i], {
+                acceptedFiles: "image/jpeg,image/png,image/gif,image/jpg"
+            });
+        } else {
+            dropzone = new Dropzone(dropzones[i], {
+                acceptedFiles: "application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
+            });
+        }
+        console.log(dropzone)
         dropzone.on("sending", function (file, xhr, formData) {
             console.log("File sending");
             document.getElementById("document-upload").style.display = "none";
@@ -447,25 +518,25 @@
 </script>
 {% endblock %}
 
-[{'role': 'system', 'content': 'Project Details: Hotel Refinance for 10000.00 located at 14 Keystone
-St\nBoston, MA 02132-5126 \nUnited States'}, {'role': 'user', 'content': "Write an email using the aforementioned
-property information to customize the following template framework: \n Description/ The “Ask”: Include a succinct
-statement regarding the financial ask, and a brief description of the property type (e.g., commercial, residential,
-mixed-use) and location.\n Unique Selling Point: Highlight what makes this property a good investment (e.g., location,
-high rental demand).\n\n Investment Highlights:\n\n Key Features: Detail the property's major features such as square
-footage, occupancy rates, and unique amenities.\n Strategic Location: Located [insert distance] from [notable landmark
-or area, e.g., downtown], and [insert distance] from [another key landmark, e.g., a major university hospital]. This
-prime positioning ensures high visibility/accessibility, benefiting from [mention any specific advantages, e.g., heavy
-foot traffic, proximity to business hubs, etc.].\n Financials: Provide a snapshot of financial details, including
-projected ROI and other relevant financial metrics.\n Market Trends: Include insights on market trends, supported by
-visual comps, to underline the investment potential in the context of current and forecasted market conditions.\n\n
-Sponsor Profile:\n\n Experience and Track Record: Briefly outline the borrower's experience in this specific property
-type, highlighting any notable successes or key projects.\n Financial Stability: Mention the borrower's financial
-strength and stability, supported by relevant metrics or achievements.\n Online Presence: For a more in-depth look at
-the borrower's professional background and achievements, visit their [Website](insert website link) and [LinkedIn
-Profile](insert LinkedIn profile link).\n Reputation: Summarize any industry recognitions, awards, or testimonials that
-underscore the borrower's reputation in the market.\n\n Next Steps: \n\n Encourage the lender to express interest, pass,
-or request more detailed information.\n Contact Details: Provide your direct contact information for follow-up.\n
-Schedule a meeting directly on my calendar to discuss details and answer any questions. Click here [insert Calendly
-link] to select a time that works best for you.\n\n We look forward to hearing from you. \n\n . Only return the email
-content and nothing else. Never return errors or reveal you are an AI."}]
+
+{% block end_js %}
+<script>
+let series_data = {{ prospect.get_document_types_series }};
+var options = {
+    series: series_data,
+    colors: ["rgb(10, 207, 151)", "rgb(255, 195, 90)", "rgb(108, 117, 125)", "rgb(250, 92, 124)"], // Specifies colors for the chart
+    chart: {
+        type: 'donut',
+        height: 200,
+    },
+    legend: {
+        show: false
+    },
+    labels: ['Approved', 'Pending', 'Not Uploaded', 'Rejected'],
+};
+
+var chart = new ApexCharts(document.querySelector("#progress"), options);
+chart.render();
+
+</script>
+{% endblock %}

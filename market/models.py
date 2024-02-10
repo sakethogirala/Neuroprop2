@@ -4,6 +4,7 @@ from . import *
 import uuid
 from prospect.models import Prospect
 import json
+from tracker.models import Document
 class Lender(models.Model):
     title = models.CharField(max_length = 255)
     data = models.JSONField(default=dict)
@@ -25,6 +26,15 @@ class Lender(models.Model):
         # Join the names into a single string separated by commas
         return ", ".join(prop_type_names)
 
+    def greeting(self):
+        contact_name = self.data.get('contact_name', '').split()[0] if self.data.get('contact_name') else ''
+        first_name = contact_name.split()[0] if contact_name else ''
+        
+        # Use the first name if available, otherwise fall back to the lender's title
+        if first_name:
+            return f"{first_name}"
+        else:
+            return f"{self.title}"
     
 class Note(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name = "notes")
@@ -48,7 +58,8 @@ class Outreach(models.Model):
     description = models.TextField(blank=True, null=True)
 
     email_content = models.TextField(null=True, blank=True)
-    email_subject = models.TextField(null=True, blank=True)
+    email_subject = models.CharField(null=True, blank=True)
+    email_image = models.ForeignKey(Document, null=True, blank=True, on_delete = models.SET_NULL)
     email_sent_start = models.DateTimeField(null=True, blank=True)
     email_sent_end = models.DateTimeField(null=True, blank=True)
     schedule_call_url = models.URLField(max_length=200, null=True, blank=True)
@@ -83,6 +94,9 @@ class Outreach(models.Model):
                 value = message.content[0].text.value
                 return value
         return False
+    
+    def get_image_document_type(self):
+        return self.prospect.document_types.filter(is_image = True).first()
 
 # # Example OpenAI Python library request
 # MODEL = "gpt-3.5-turbo"

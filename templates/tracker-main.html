@@ -80,7 +80,7 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Status</th>
-                                    <th>To Dos</th>
+                                    <th>Progress</th>
                                     <th>Last Updated</th>
                                     <th>Action</th>
                                 </tr>
@@ -91,12 +91,11 @@
 
                                     <td>{{ prospect.name }}</td>
                                     <td>
-                                        <div class="badge badge-{{ prospect.get_progress_class }}-lighten mb-1">{{ prospect.get_status_display }}</div>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar progress-lg" role="progressbar" style="width: {{ prospect.get_document_progress_percentage }}%"></div>
-                                        </div>
+                                        <div class="badge badge-{{ prospect.get_progress_class }}-lighten">{{ prospect.get_status_display }}</div>
                                     </td>
-                                    <td>{{ prospect.get_todo_count }}</td>
+                                    <td class="">
+                                        <div series="{{ prospect.get_document_types_series }}" class="progress-chart"></div>
+                                    </td>
                                     <td>{{ prospect.last_updated }} </td>
                                     <td class="table-action">
                                         <a href="{% url 'tracker-detail' prospect.pk prospect.get_next_document_type %}" class="action-icon"> <i class="mdi mdi-pencil"></i></a>
@@ -115,4 +114,33 @@
 
 </div>
 {% include 'includes/add-prospect-modal.html' %}
+{% endblock %}
+
+{% block end_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let progress_rows = document.getElementsByClassName("progress-chart");
+    for(let i = 0; i < progress_rows.length; i++){
+        let series_data = JSON.parse(progress_rows[i].getAttribute("series")); // Parse the series data
+        let options = {
+            series: series_data,
+            colors: ["rgb(10, 207, 151)", "rgb(255, 195, 90)", "rgb(108, 117, 125)", "rgb(250, 92, 124)"],
+            chart: {
+                type: 'donut',
+                height: 100,
+            },
+            dataLabels: {
+            enabled: false
+            },
+            legend: {
+                show: false
+            },
+            labels: ['Approved', 'Pending', 'Not Uploaded', 'Rejected'],
+        };
+        
+        let chart = new ApexCharts(progress_rows[i], options);
+        chart.render();
+    }
+});
+    </script>
 {% endblock %}

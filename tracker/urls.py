@@ -17,5 +17,7 @@ urlpatterns = [
     path("delete-prospect/<prospect_uid>/", delete_prospect, name="delete_prospect"),
     path("send-client-feedback/>/", send_client_feedback, name="send_client_feedback"),
     path("update-document-type-status", update_document_type_status, name="update_document_type_status"),
-    path("ask-document-question/", ask_document_question, name="ask_document_question")
+    path("ask-document-question/", ask_document_question, name="ask_document_question"),
+    path("prospect/<prospect_pk>/edit/", edit_propsect, name="edit_propsect"),
+    path("client/onboard/<prospect_uid>/", onboard_client, name="onboard_client")
 ]

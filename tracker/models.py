@@ -23,6 +23,7 @@ class DocumentType(models.Model):
     document_count = models.IntegerField(default=1)
     staff_notifications = models.BooleanField(default = False)
     client_notifications = models.BooleanField(default = False)
+    is_image = models.BooleanField(default = False)
 
     def __str__(self) -> str:
         return f"{self.prospect} - {self.type}"

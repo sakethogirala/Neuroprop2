@@ -62,7 +62,8 @@ def create_lender(request):
     if request.method == "POST":
         data = request.POST
         title = data.get("title")
-        contact = data.get("contact")
+        contact_email = data.get("contact_email")
+        contact_name = data.get("contact_name")
         max_loan = "$" + data.get("max_loan")
         min_loan = "$" + data.get("min_loan")
         max_ltv = data.get("max_ltv") + "%"
@@ -73,7 +74,8 @@ def create_lender(request):
             data = {
                 "title": title,
                 "type": "NA",
-                "contact": contact,
+                "contact_email": contact_email,
+                "contact_name": contact_name,
                 "max_loan": max_loan,
                 "min_loan": min_loan,
                 "max_ltv": max_ltv,
@@ -227,10 +229,10 @@ def send_outreach(request, outreach_pk):
         outreach = get_object_or_404(Outreach, pk = outreach_pk)
         data = request.POST
         print(data)
-        subject = data.get("subject")
-        schedule_call_url = data.get("schedule-call-url")
-        outreach.email_subject = subject
-        outreach.schedule_call_url = schedule_call_url
+        # subject = data.get("subject")
+        # schedule_call_url = data.get("schedule-call-url")
+        # outreach.email_subject = subject
+        # outreach.schedule_call_url = schedule_call_url
         outreach.status = "in_progress"
         outreach.save()
         send_outreach_emails.delay(outreach_pk)
@@ -241,8 +243,14 @@ def save_outreach(request, outreach_pk):
     outreach = get_object_or_404(Outreach, pk = outreach_pk)
     print("saving outreach")
     data = request.POST
-    print(data)
+    print("PROPERTY DATA: ", data)
+    print(data.get("property-image"))
+    property_image = data.get("property-image")
+    if property_image:
+        outreach.email_image = Document.objects.get(pk = data.get("property-image"))
+    print("1")
     outreach.email_subject = data.get("email-subject")
+    print(outreach.email_subject)
     outreach.schedule_call_url = data.get("schedule-call-url")
     outreach.email_content = data.get("email-content")
     outreach.save()
@@ -253,10 +261,11 @@ def view_outreach_preview(request, outreach_pk):
     if request.user.staff_access():
         print("hello")
         outreach = get_object_or_404(Outreach, pk = outreach_pk)
-        body_html = render_to_string("emails/outreach-content.html", {
-        "outreach": outreach,
-    })
+        context = {
+            "outreach": outreach,
+            "lender": outreach.lenders.all().first(),
+            "preview": True
+        }
+        body_html = render_to_string("emails/outreach-content.html", context)
         print(body_html)
         return JsonResponse({"html": body_html}, safe=False)
-
-        

@@ -4,7 +4,7 @@ from . import PROSPECT
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
-
+from urllib.parse import quote_plus
 class Data(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,  editable=True, null=False)
     data = models.JSONField(null=True)
@@ -23,9 +23,16 @@ class Address(models.Model):
     def get_address(self):
         return render_to_string("includes/address.html", {"address": self})
 
+    def get_geocode_address(self):
+        components = [self.address, self.address2, self.city, self.state, self.postal_code, self.country]
+        print("components: ", components)
+        address_string = ', '.join(filter(None, components))  # Exclude None or empty components
+        return quote_plus(address_string)
+
 class Prospect(models.Model):
     uid = models.UUIDField(default=uuid.uuid4)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="prospects_owned", null=True, blank=True)
+    contact = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True ,blank=True)
     name = models.CharField(max_length=200)
     status = models.CharField(choices=PROSPECT.STATUS_CHOICES, max_length=100, default="pending")
@@ -34,8 +41,13 @@ class Prospect(models.Model):
     purpose = models.CharField(choices=PROSPECT.PURPOSE_CHOICES, max_length=100)
     property_type = models.CharField(choices=PROSPECT.PROPERTY_TYPE_CHOICES)
     users = models.ManyToManyField(get_user_model(), related_name="prospects")
-    amount = models.DecimalField(default=0.00, max_digits=20, decimal_places=2)
-    
+    amount = models.DecimalField(default=0.00, max_digits=20, decimal_places=2, null=True, blank=True)
+    context = models.TextField(null = True, blank = True)
+
+    client_onboarded = models.BooleanField(default = False)
+    client_scenario = models.JSONField(null = True, blank = True)
+
+
     def __str__(self) -> str:
         return self.name
 
@@ -99,13 +111,19 @@ class Prospect(models.Model):
     
     def get_approved_documents_info(self):
         messages = []
-        for doc_type in self.document_types.all():
+        for doc_type in self.document_types.filter(status = "pending"):
             for doc in doc_type.documents.filter(status = "approved"):
+                messages.append({"role": "system", "content": f"Document {doc.name} underwriting information: {doc.feedback}"})
+        for doc_type in self.document_types.filter(status = "approved"):
+            for doc in doc_type.documents.all():
                 messages.append({"role": "system", "content": f"Document {doc.name} underwriting information: {doc.feedback}"})
         return messages
     
     def get_general_info(self):
-        return f"{self.get_property_type_display()} {self.get_purpose_display()} for ${self.amount} located at {self.address.get_address()}"
+        return f"{self.get_property_type_display()} {self.get_purpose_display()} for ${self.amount} located at {self.address.get_address()}. Circumstances and context: {self.context}"
+    
+    def get_document_types_series(self):
+        return [self.document_types.filter(status="approved").count(), self.document_types.filter(status="pending").count(), self.document_types.filter(status="not_uploaded").count(), self.document_types.filter(status="rejected").count()]
     
 
 def get_image_path(instance, filename):

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% load static %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Edit Prospect</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form action="" method="post">{% csrf_token %}
+                        <div class="mb-3">
+                            <label for="">Name</label>
+                            <input required name="name" type="text" placeholder="Project Name"
+                                   value="{{ prospect.name }}" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="Status">Status</label>
+                            <select required id="" class="form-select form-control" name="status">
+                                <option value="">Choose Status</option>
+                                {% for key, value in status_choices %}
+                                <option value="{{ key }}" {% if prospect.status == key %}selected{% endif %}>{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="">Address</label>
+                            <div class="text-muted">{{ prospect.address.get_address|linebreaks }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <input name="amount" type="number" placeholder="Amount" 
+                                   value="{{ prospect.amount }}" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <select required id="purpose" class="form-select form-control" name="purpose">
+                                <option value="">Choose Purpose</option>
+                                {% for key, value in purpose_choices %}
+                                <option value="{{ key }}" {% if prospect.purpose == key %}selected{% endif %}>{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <select required id="property-type" class="form-select form-control" name="property-type">
+                                <option value="">Choose Property Type</option>
+                                {% for key, value in property_type_choices %}
+                                <option value="{{ key }}" {% if prospect.property_type == key %}selected{% endif %}>{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="">Context</label>
+                            <textarea placeholder="Context" class="form-control" name="context" id="" cols="30" rows="5">{{ prospect.context }}</textarea>
+                            <small class="text-muted">Unique circumstances or more contextual information to guide our AI</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update</button>
+                    </form>
+        </div>
+
+        </div>
+        </div> <!-- end card-->
+    </div>
+</div>
+</div>
+
+{% endblock %}

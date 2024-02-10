@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tracker.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Client Onboarding</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <!-- project card -->
+            <div class="card d-block">
+                <div id="detail-body" class="card-body">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <div>How much is the <b>minimum</b> you would take?</div>
+                            <div class="input-group flex-nowrap">
+                                <span class="input-group-text" id="basic-addon1">$</span>
+                                <input min="5000000" max="100000000" class="form-control" type="number" name="min" id="" placeholder="">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div>How much is the <b>maximum</b> you would take?</div>
+                            <div class="input-group flex-nowrap">
+                                <span class="input-group-text" id="basic-addon1">$</span>
+                                <input min="5000000" max="100000000" class="form-control" type="number" name="max" id="" placeholder="">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div>What is your scenario?</div>
+                            <textarea placeholder="We have a term sheet for 60% LTC, someone has to come in at 70% for us to switch" class="form-control" name="scenario" id="" cols="30" rows="10"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </form>
+                </div> <!-- end card-body-->
+
+            </div> <!-- end card-->
+
+            <!-- end card-->
+        </div>
+        </div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+    <script>
+         $(".js-range-slider").ionRangeSlider({
+        type: "double",
+        min: 1000000,
+        max: 100000000,
+        from:10000000,
+        to: 20000000,
+        grid: true
+    });
+    
+    </script>
+{% endblock %}

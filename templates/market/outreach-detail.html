@@ -62,9 +62,19 @@
                             <input id="subject" required name="subject" type="text" placeholder="Email Subject" class="form-control" value="{{ outreach.email_subject }}">
                         </div>
                         <div class="mb-3">
+                            <label for="">Email Property Image</label>
+                            <select required id="property-image" class="form-select form-control" name="property-image">
+                                <option value="">Choose Email Property Image</option>
+                                {% for image in outreach.get_image_document_type.documents.all %}
+                                <option {% if outreach.email_image.pk == image.pk %}selected{% endif %} value="{{ image.pk }}">{{ image.name }} - {{ image.get_status_display }}</option>
+                                {% endfor %}
+                            </select>
+    
+                        </div>
+                        <div class="mb-3">
                             <div class="d-flex align-items-center justify-content-between">
                                 <h5>Email Content</h5>
-                                <a href="{% url 'generate_smart_outreach' outreach.pk %}" class="btn btn-sm btn-primary my-1">Generate Smart Email</a>
+                                <a id="gen-smart-email" href="{% url 'generate_smart_outreach' outreach.pk %}" class="btn btn-sm btn-primary my-1">Generate Smart Email</a>
                             </div>
                         {% if outreach.email_content %}
                                 <textarea id="email-content" rows="20" name="email_content" class="w-100 form-control">{{ outreach.email_content|safe }}</textarea>
@@ -83,10 +93,18 @@
                     </div>
                     <div class="mb-3">
                         <label for="">Schedule call URL (optional)</label>
-                        <input value="{{ outreach.schedule_call_url }}" id="schedule-call-url" name="schedule-call-url" type="url" placeholder="URL to schedule a call, eg: Calendy link" class="form-control">
+                        <input value="{{ outreach.schedule_call_url|default_if_none:'' }}" id="schedule-call-url" name="schedule-call-url" type="url" placeholder="URL to schedule a call, eg: Calendy link" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <button id="send-outreach-btn" class="btn btn-primary w-100">Send Emails <i class="mdi mdi-airplane ms-1"></i></button>
+                        <div class="row">
+                            <div class="col-6">
+                                <button id="save-outreach-btn" class="btn btn-success w-100">Save Email</button>
+
+                            </div>
+                            <div class="col-6">
+                                <button id="send-outreach-btn" class="btn btn-primary w-100">Send Emails <i class="mdi mdi-airplane ms-1"></i></button>
+                            </div>
+                        </div>
                     </div>
                     </div>
                 </div>
@@ -104,7 +122,7 @@
                     <div>Email sequences finished at {{ outreach.email_sent_end }}</div>
                     {% endif %}
                     </div>
-                    
+                
                 </div>
                     <div class="table-responsive">
                         <table class="table table-centered table-nowrap table-hover mb-0">
@@ -113,10 +131,14 @@
                                 <tr>
                                     <td>
                                         <h5 class="font-14 my-1 fw-normal">{{ lender.title }}</h5>
+                                        <span class="text-muted font-13">Originator</span>
+                                    </td>
+                                    <td>
+                                        <h5 class="font-14 my-1 fw-normal">{{ lender.data.contact_name }}</h5>
                                         <span class="text-muted font-13">Name</span>
                                     </td>
                                     <td>
-                                        <h5 class="font-14 my-1 fw-normal">{{ lender.data.contact }}</h5>
+                                        <h5 class="font-14 my-1 fw-normal">{{ lender.data.contact_email }}</h5>
                                         <span class="text-muted font-13">Email</span>
                                     </td>
                                     <td class="table-action">
@@ -155,51 +177,73 @@ if (loading) {
 
 </script>
 <script>
-    document.getElementById('send-outreach-btn').addEventListener('click', function(e) {
-    e.preventDefault(); // Prevent default form submission
+    function saveOutreach(callback) {
+        let saveEndpoint = `{% url 'save_outreach' outreach.pk %}`;
+        let email_content = document.getElementById("email-content");
+        console.log(email_content)
+        if(!email_content){
+            document.getElementById("gen-smart-email").focus()
+            return alert("Please generate an email first.")
+        }
+        let formData = new FormData();
+        formData.append('email-subject', document.getElementById('subject').value);
+        formData.append('email-content', email_content.value);
+        formData.append("schedule-call-url", document.getElementById("schedule-call-url").value);
+        formData.append("property-image", document.getElementById("property-image").value); // Assuming it's a file input
+        
+        fetch(saveEndpoint, {
+            method: 'POST',
+            headers: {
+                    "X-CSRFToken": getCookie('csrftoken'),
+                },
+            body: formData
+        })
+        .then(response => {
+            console.log('Save Outreach Response:', response);
+            let btn = document.getElementById('save-outreach-btn')
+            btn.innerHTML = 'Email Saved!';
+            setTimeout(function() {
+                btn.innerHTML = 'Save Email!';
+            }, 3000);
 
-    let saveEndpoint = `{% url 'save_outreach' outreach.pk %}`;
-    let previewEndpoint = `{% url 'view_outreach_preview' outreach.pk %}`;
+            if (callback) {
+                callback(); // Call the callback function if provided
+            }
+        })
+        .catch(error => {
+            console.error('Error saving outreach:', error);
+        });
+    }
     
-    // Data to be sent (adjust according to your form structure)
-    let formData = new FormData();
-    formData.append('email-subject', document.getElementById('subject').value);
-    formData.append('email-content', document.getElementById("email-content").value);
-    formData.append("schedule-call-url", document.getElementById("schedule-call-url").value);
-    // Add other form data as needed
-
-    // First, send the save_outreach POST request
-    fetch(saveEndpoint, {
-        method: 'POST',
-        headers: {
-                "X-CSRFToken": getCookie('csrftoken'),
-            },
-        body: formData
-    })
-    .then(data => {
-        console.log('Save Outreach Response:', data);
-        // After saving, proceed to fetch the email preview
-        fetchEmailPreview(previewEndpoint);
-    })
-    .catch(error => {
-        console.error('Error saving outreach:', error);
+    document.getElementById('send-outreach-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        saveOutreach(function() {
+            let previewEndpoint = `{% url 'view_outreach_preview' outreach.pk %}`;
+            fetchEmailPreview(previewEndpoint); 
+        });
     });
-});
-
-// Function to fetch email preview
-function fetchEmailPreview(endpoint) {
-    fetch(endpoint)
-    .then(response => response.json())
-    .then(data => {
-        let modalBody = document.getElementById('email-preview');
-        modalBody.innerHTML = data.html;
-        var myModal = new bootstrap.Modal(document.getElementById('send-outreach-modal'));
-        myModal.show(); 
-    })
-    .catch(error => {
-        console.error('Error fetching email preview:', error);
+    
+    // For another button that just saves without fetching the preview
+    document.getElementById('save-outreach-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        saveOutreach(); // Just save without passing a callback
     });
-}
+    
+    // Function to fetch email preview
+    function fetchEmailPreview(endpoint) {
+        fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+            let modalBody = document.getElementById('email-preview');
+            modalBody.innerHTML = data.html;
+            var myModal = new bootstrap.Modal(document.getElementById('send-outreach-modal'));
+            myModal.show(); 
+        })
+        .catch(error => {
+            console.error('Error fetching email preview:', error);
+        });
+    }
+    
 
 </script>
 {% endblock %}

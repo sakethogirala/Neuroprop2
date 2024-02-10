@@ -39,6 +39,9 @@ def tracker_detail(request, prospect_pk, document_type_pk=None):
     prospect = get_object_or_404(Prospect, pk = prospect_pk)
     is_staff = request.user.staff_access()
 
+    if (not prospect.client_onboarded) and (not is_staff):
+        return redirect(reverse("onboard_client", kwargs={"prospect_uid": prospect.uid}))
+
     if not document_type_pk:
         print("get it")
         document_type = get_object_or_404(DocumentType, pk = prospect.get_next_document_type())
@@ -61,12 +64,23 @@ def tracker_detail(request, prospect_pk, document_type_pk=None):
         "pipeline": pipeline,
         "DOCUMENT_TYPE_STATUS_CHOICES": DOCUMENT_TYPE.STATUS_CHOICES
     }
-    return render(request, "tracker-detail.html", context = context) 
+    return render(request, "tracker-detail.html", context = context)
+
 def upload_document(request):
     if request.method == 'POST' and request.FILES['file']:
         document_file = request.FILES.get('file')
         document_type_pk = request.POST.get("document_type_pk")
         document_type = get_object_or_404(DocumentType, pk = document_type_pk)
+        print(document_type)
+        # Handle images
+        if document_type.is_image:
+            document_type.status = "pending"
+            document = Document.objects.create(document_type = document_type)
+            document.uploaded_by = request.user
+            document.file = document_file
+            document.name = f"{document_type.general_name}_{document_type.document_count}"
+            document.save()
+
         if document_type.status == "not_uploaded":
             document_type.status = "pending"
             document_type.save()
@@ -78,6 +92,16 @@ def upload_document(request):
 
         document_type.document_count += 1
         document_type.save()
+
+        if document_type.is_image:
+            document.smart_checked = True
+            document.save()
+            response = {
+                "status": "success",
+                "document_pk": document.pk
+            }
+            return JsonResponse(response, safe=False)
+        
         print("right here")
         # # Start AI Review
         document.openai_upload_file(client)
@@ -269,3 +293,50 @@ def ask_document_question(request):
         )
         return redirect(reverse("tracker-detail", kwargs={"prospect_pk": document.document_type.prospect.pk, "document_type_pk": document.document_type.pk}))
     return HttpResponse("error", status = "404")
+
+
+
+@login_required
+def edit_propsect(request, prospect_pk):
+    prospect = get_object_or_404(Prospect, pk = prospect_pk)
+    if request.method == "POST":
+        data = request.POST
+        prospect.name =  data.get("name")
+        prospect.purpose = data.get("purpose")
+        prospect.status = data.get("status")
+        prospect.property_type= data.get("property-type")
+        prospect.amount = data.get("amount")
+        prospect.context = data.get("context")
+        prospect.save()
+        messages.success(request, "Prospect edited!")
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
+    context = {
+        "prospect": prospect,
+        "status_choices": PROSPECT.STATUS_CHOICES,
+        "purpose_choices": PROSPECT.PURPOSE_CHOICES,
+        "property_type_choices": PROSPECT.PROPERTY_TYPE_CHOICES
+    }
+    return render(request, "edit-prospect.html", context)
+
+
+def onboard_client(request, prospect_uid):
+    prospect = get_object_or_404(Prospect, uid = prospect_uid)
+    if request.method == "POST":
+        data = request.POST
+        print(data)
+        prospect.client_scenario = {
+            "scenario": data.get("scenario"),
+            "min_would_take": data.get("min"),
+            "max_would_take": data.get("max")
+        }
+        prospect.client_onboarded = True
+        prospect.save()
+        messages.success(request, "Welcome to NeuroProp.")
+    
+    if prospect.client_onboarded:
+        return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk}))
+
+    context = {
+
+    }
+    return render(request, "onboard-client.html", context)

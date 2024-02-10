@@ -16,7 +16,7 @@ def openai_generate_outreach(outreach_pk):
     messages.append({"role": "system", "content": f"Project Details: {outreach.prospect.get_general_info()}"})
     print(messages)
     messages.append({"role": "system", "content": f"Email Framework: {OUTREACH.EMAIL_FRAMEWORK}\n Email Example: {OUTREACH.EMAIL_EXAMPLE}"})
-    messages.append({"role": "user", "content": f"You are an incredible commercial real estate loan officer who is contacting potenital lenders for this property. Write an email using the aforementioned property information and document underwriting information, using the aforementioned 'Email Framework' and 'Email Example' for inspiration. Use specific infomration from the documents supplied. Only return the email content and nothing else. Do not even include the subject or signing. Format the email content nicely. Never return errors or reveal you are an AI."})
+    messages.append({"role": "user", "content": f"You are an incredible commercial real estate loan officer who is contacting potenital lenders for this property. Write an email using the aforementioned property information and document underwriting information, using the aforementioned 'Email Framework' and 'Email Example' for inspiration. Use specific infomration from the documents supplied. Only return the email content and nothing else. Do not even include the subject or signing or intro. Format the email content nicely. Never return errors or reveal you are an AI."})
     print("messages: ", messages)
     response = client.chat.completions.create(
         model="gpt-4",
@@ -44,29 +44,32 @@ def send_outreach_emails(outreach_pk):
     lenders = outreach.lenders.all()
     messages = []
     # static_path = static("images/hallospee.jpg")
-    body_html = render_to_string("emails/outreach-content.html", {
-        "outreach": outreach,
-    })
     for lender in lenders:
+        body_html = render_to_string("emails/outreach-content.html", {
+            "lender": lender,
+            "outreach": outreach,
+            "preview": False
+        })
         email = EmailMultiAlternatives(
             outreach.email_subject,
             body_html, 
             settings.DEFAULT_FROM_EMAIL,
-            [lender.data["contact"],]
+            [lender.data["contact_email"],]
         )
         email.mixed_subtype = 'related'
         email.attach_alternative(body_html, "text/html")
-        img_dir = "static/images/"
-        image = "white.png"
-        file_path = os.path.join(img_dir, image)
+        # img_dir = "static/images/"
+        # image = "white.png"
+        # file_path = os.path.join(img_dir, image)
+        file_path = outreach.email_image.file.path
         with open(file_path, 'rb') as f:
             img = MIMEImage(f.read())
             img.add_header('Content-ID', '<preview>')
-            img.add_header('Content-Disposition', 'inline', filename=image)
-        with open(file_path, 'rb') as f:
-            img = MIMEImage(f.read())
-            img.add_header('Content-ID', '<googlemaps>')
-            img.add_header('Content-Disposition', 'inline', filename=image)
+            img.add_header('Content-Disposition', 'inline', filename=outreach.email_image.name)
+        # with open(file_path, 'rb') as f:
+        #     img = MIMEImage(f.read())
+        #     img.add_header('Content-ID', '<googlemaps>')
+        #     img.add_header('Content-Disposition', 'inline', filename=image)
         email.attach(img)
         email.send()
     outreach.email_sent_end = timezone.now()
