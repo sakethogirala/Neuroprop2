@@ -12,5 +12,6 @@ class PROSPECT:
     ]
     PROPERTY_TYPE_CHOICES = [
         ("hotel", "Hotel"),
-        ("self-storage", "Self Storage")
+        ("self-storage", "Self Storage"),
+        ("multifamily", "Multi-Familty")
     ]

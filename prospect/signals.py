@@ -33,3 +33,5 @@ def pre_save_user(sender, instance, created, *args, **kwargs):
             create_files(instance, DOCUMENT.HOTEL_DOCS)
         if instance.property_type == "self-storage":
             create_files(instance, DOCUMENT.SELF_STORAGE_DOCS)
+        if instance.property_type == "multifamily":
+            create_files(instance, DOCUMENT.MULTI_FAMILY_DOCS)
