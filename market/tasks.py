@@ -31,49 +31,61 @@ def openai_generate_outreach(outreach_pk):
 
 @shared_task
 def send_outreach_emails(outreach_pk):
-    from django.templatetags.static import static
-    from django.template.loader import render_to_string
-    from .models import Outreach
+    from django.conf import settings
+    import requests
     from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
     from email.mime.image import MIMEImage
+    from .models import Outreach
     from django.utils import timezone
-    import os
-    outreach = Outreach.objects.get(pk = outreach_pk)
+
+    outreach = Outreach.objects.get(pk=outreach_pk)
     outreach.email_sent_start = timezone.now()
     outreach.save()
     lenders = outreach.lenders.all()
-    messages = []
-    # static_path = static("images/hallospee.jpg")
+
     for lender in lenders:
         body_html = render_to_string("emails/outreach-content.html", {
             "lender": lender,
             "outreach": outreach,
             "preview": False
         })
+
+        # Generate the Google Maps image URL
+        google_maps_image_url = f"https://maps.googleapis.com/maps/api/staticmap?center={outreach.prospect.address.get_geocode_address()}&zoom=15&markers=color:red%7C{outreach.prospect.address.get_geocode_address()}&size=500x300&maptype=roadmap&key={settings.GOOGLE_MAPS_API_KEY}"
+        
+        # Download the Google Maps image
+        response = requests.get(google_maps_image_url)
+        map_image_data = response.content
+
         email = EmailMultiAlternatives(
-            outreach.email_subject,
-            body_html, 
-            settings.DEFAULT_FROM_EMAIL,
-            [lender.data["contact_email"],]
+            subject=outreach.email_subject,
+            body=body_html,  # This is the text body, not used here but required
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[lender.data["contact_email"]]
         )
         email.mixed_subtype = 'related'
         email.attach_alternative(body_html, "text/html")
-        # img_dir = "static/images/"
-        # image = "white.png"
-        # file_path = os.path.join(img_dir, image)
+
+        # Attach the outreach image if available
         file_path = outreach.email_image.file.path
         with open(file_path, 'rb') as f:
             img = MIMEImage(f.read())
             img.add_header('Content-ID', '<preview>')
             img.add_header('Content-Disposition', 'inline', filename=outreach.email_image.name)
-        # with open(file_path, 'rb') as f:
-        #     img = MIMEImage(f.read())
-        #     img.add_header('Content-ID', '<googlemaps>')
-        #     img.add_header('Content-Disposition', 'inline', filename=image)
-        email.attach(img)
+            email.attach(img)
+
+        # Attach the Google Maps image
+        map_img = MIMEImage(map_image_data)
+        map_img.add_header('Content-ID', '<googlemaps>')
+        map_img.add_header('Content-Disposition', 'inline')
+        email.attach(map_img)
+
         email.send()
+
     outreach.email_sent_end = timezone.now()
     outreach.save()
+
 
 @shared_task
 def send_content_finished(outreach_pk):

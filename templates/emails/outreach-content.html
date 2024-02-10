@@ -1,5 +1,7 @@
 {% load static %}
+{% if preview %}
 <h4>Subject: {{ outreach.email_subject }}</h4>
+{% endif %}
 <div style="text-align: center;">
 {% if preview %}
 <img width="300px" src="{{ outreach.email_image.file.url }}"/>
@@ -7,6 +9,7 @@
 <img width="300px" src="cid:preview"/>
 {% endif %}
 </div>
+<br>
 <div>
 <div>Hey {{ lender.greeting }},</div>
 <br>
@@ -21,8 +24,8 @@
     <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ outreach.prospect.address.get_geocode_address }}&zoom=15&markers=color:red%7C{{ outreach.prospect.address.get_geocode_address }}&size=500x300&maptype=roadmap&key=AIzaSyAAjzSqYKYNaBs-XM7fnh1-KrvBfy-Cwpc" alt="">
 </a>
 {% else %}
-<a href="https://www.google.com/maps/search/?api=1&query={{ outreach.prospect.address.get_geocode_address }}" target="_blank">
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ outreach.prospect.address.get_geocode_address }}&zoom=15&markers=color:red%7C{{ outreach.prospect.address.get_geocode_address }}&size=500x300&maptype=roadmap&key=AIzaSyAAjzSqYKYNaBs-XM7fnh1-KrvBfy-Cwpc" alt="">
-</a>
+    <a href="https://www.google.com/maps/search/?api=1&query={{ outreach.prospect.address.get_geocode_address }}" target="_blank">
+        <img src="cid:googlemaps" alt="">
+    </a>
 {% endif %}
 </div>
