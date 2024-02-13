@@ -84,7 +84,7 @@ class DOCUMENT:
         # Sponsor Documents
         ("Government-issued ID", "SponsorGovID", "Driver's License, Passport, etc. to verify identity of the sponsor."),
         ("Personal Financial Statement", "SponsorFinancialStatement", "A document showing sponsor's net worth and liquidity."),
-        ("Resume or Biography", "SponsorResume", "Highlighting real estate experience to demonstrate capability and experience."),
+        ("Resume or Bio", "Resume", "Highlighting real estate experience to demonstrate capability and experience."),
         ("Credit Report", "SponsorCreditReport", "Credit history and score of the sponsor for financial reliability assessment."),
         ("Bank Statements", "BankStatements", "To verify cash reserves and financial stability of the sponsor."),
         ("Asset Verification", "AssetVerification", "Documentation of retirement accounts, stocks, etc. for wealth verification."),

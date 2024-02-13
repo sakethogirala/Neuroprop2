@@ -8,6 +8,9 @@
             </div>
             <div class="modal-body">
                 <form id="create_outreach" action="{% url 'create_outreach' %}" method="post">{% csrf_token %}     
+                    <div class="mb-3">
+                        <input class="form-control" type="text" name="name" placeholder="Optional Outreach Name">
+                    </div>
                     <div class="text-center mb-3">You have selected <span class="fw-bold" id="lender-count"></span> lenders to reach out to.</div>
                     <input type="hidden" id="lenders" name="lenders">
                     <input type="hidden" id="prospect_uid" name="prospect_uid">

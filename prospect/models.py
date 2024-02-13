@@ -120,7 +120,7 @@ class Prospect(models.Model):
         return messages
     
     def get_general_info(self):
-        return f"{self.get_property_type_display()} {self.get_purpose_display()} for ${self.amount} located at {self.address.get_address()}. Circumstances and context: {self.context}"
+        return f"{self.get_property_type_display()} {self.get_purpose_display()} for ${self.amount} located at {self.address.get_address()}. Circumstances and context: {self.context} and {self.client_scenario}"
     
     def get_document_types_series(self):
         return [self.document_types.filter(status="approved").count(), self.document_types.filter(status="pending").count(), self.document_types.filter(status="not_uploaded").count(), self.document_types.filter(status="rejected").count()]

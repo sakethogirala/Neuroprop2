@@ -160,18 +160,22 @@ def edit_lender(request, lender_pk):
 def create_outreach(request):
     if request.method == "POST":
         lenders_string = request.POST.get('lenders')
+        name = request.POST.get("name", None)
+        print("name: ", name)
         selected_lender_ids = lenders_string.split(',') if lenders_string else []
+        print(selected_lender_ids)
 
         selected_lenders = Lender.objects.filter(id__in=selected_lender_ids)
+        print(selected_lenders)
         prospect = get_object_or_404(Prospect, uid = request.POST.get("prospect_uid"))
         new_outreach, created = Outreach.objects.get_or_create(
-            name=f'{prospect.name} Outreach',
+            name= f'{prospect.name} Outreach' if not name else name,
             created_by=request.user,
             status='planned',
             prospect=prospect,
         )
 
-        new_outreach.lenders.set(selected_lenders)
+        new_outreach.lenders.add(selected_lenders)
         new_outreach.save()
 
         return redirect(reverse("outreach_detail", kwargs={"outreach_uid": new_outreach.uid}))
