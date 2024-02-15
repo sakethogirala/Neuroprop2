@@ -9,6 +9,9 @@ class Data(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,  editable=True, null=False)
     data = models.JSONField(null=True)
 
+class ProspectData(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True,  editable=True, null=False)
+    data = models.JSONField(null=True)
 class Address(models.Model):
     address = models.CharField(max_length=256, blank=True)
     address2 = models.CharField(max_length=256, blank=True, null=True)

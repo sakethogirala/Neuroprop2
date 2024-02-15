@@ -25,7 +25,6 @@
                     <table class="table table-centered mb-0">
                         <thead>
                             <tr>
-                                <th>Loan ID</th>
                                 <th>Property name</th>
                                 <th>City</th>
                                 <th>Loan Balance</th>
@@ -33,13 +32,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entry in data.object_list %}
+                            
+                            {% for entry in data %}
                             <tr>
-                                <td><a style="text-decoration: none;">{{entry.0}}</a> </td>
-                                <td>{{entry.1}}</td>
-                                <td>{{entry.2}}</td>
-                                <td>{{entry.3}}</td>
-                                <td class="text-center">{% include 'includes/score-badge.html' with score=entry.4 %}
+                                <td>{{entry.data.propname}}</td>
+                                <td>{{entry.data.city}}</td>
+                                <td>{{entry.data.loanuniversepropid}}</td>
+                                <td class="text-center">{% include 'includes/score-badge.html' with score=entry.data.predictions %}
                                 </td>
                             </tr>
                             {% endfor %}

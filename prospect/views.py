@@ -9,30 +9,11 @@ from .tasks import *
 
 def refresh_data(request):
     # filename = get_data_from_api()
-    main.delay(samples=10000000)
+    process_and_store_data.delay()
     return redirect("get_preds")
 
 def get_preds(request):
-    data = Data.objects.all()
-    final_data = [json.loads(entry.data) for entry in data]
-    data_elements = []
-    for entry in final_data:
-        for index in range(len(entry['loanuniversepropid'])):
-            temp = []
-            temp.append(entry['loanuniversepropid'][index])
-            temp.append(entry['propname'][index])
-            temp.append(entry['city'][index])
-            temp.append(entry['secloanbal'][index])
-            temp.append(entry['predictions'][index])
-            data_elements.append(temp)
-    if len(data_elements) == 0:
-        messages.info(request, "There are no Historical Predection Data Found!")
-        return render(request, 'prospect.html')
-
-    # # Sort the data by 'predictions' in descending order (replace `reverse=True` with `reverse=False` if you want ascending order)
-    # data_elements.sort(key=lambda x: x['predictions'], reverse=True)
-    # data_elements = data_elements[:100]
-
+    data_elements = ProspectData.objects.all()
     pagination = Paginator(data_elements, 25)
     page_number = request.GET.get('page')
     
