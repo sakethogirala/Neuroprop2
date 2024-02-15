@@ -156,6 +156,7 @@ OPENAI_OUTREACH_ID = "asst_KDR1heIJLm3D6Gj5NFgW3Q7A"
 # Celery
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACKS_LATE = True
 
 GOOGLE_MAPS_API_KEY="AIzaSyAAjzSqYKYNaBs-XM7fnh1-KrvBfy-Cwpc"
 
