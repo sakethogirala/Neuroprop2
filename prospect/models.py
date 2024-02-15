@@ -115,7 +115,7 @@ class Prospect(models.Model):
             for doc in doc_type.documents.filter(status = "approved"):
                 messages.append({"role": "system", "content": f"Document {doc.name} underwriting information: {doc.feedback}"})
         for doc_type in self.document_types.filter(status = "approved"):
-            for doc in doc_type.documents.all():
+            for doc in doc_type.documents.exclude(status = "rejected"):
                 messages.append({"role": "system", "content": f"Document {doc.name} underwriting information: {doc.feedback}"})
         return messages
     
@@ -125,6 +125,15 @@ class Prospect(models.Model):
     def get_document_types_series(self):
         return [self.document_types.filter(status="approved").count(), self.document_types.filter(status="pending").count(), self.document_types.filter(status="not_uploaded").count(), self.document_types.filter(status="rejected").count()]
     
+    def get_approved_document_percent(self):
+        return int((self.document_types.filter(status="approved").count() / self.document_types.all().count()) * 100)
+    def get_awaiting_document_percent(self):
+        return int((self.document_types.filter(status="not_uploaded").count() / self.document_types.all().count()) * 100)
+    def get_pending_document_percent(self):
+        return int((self.document_types.filter(status="pending").count() / self.document_types.all().count()) * 100)
+    def get_rejected_document_percent(self):
+        return int((self.document_types.filter(status="rejected").count() / self.document_types.all().count()) * 100)
+
 
 def get_image_path(instance, filename):
     return f"documents/{instance.prospect.uid}/{filename}"

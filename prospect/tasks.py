@@ -2,8 +2,6 @@ from celery import shared_task
 import time
 from neuroprop.celery import app
 from django.conf import settings
-
-
 import requests
 import pandas as pd
 import json
@@ -56,7 +54,6 @@ def preprocess_dlq(row):
         return 1
     return row
 
-
 def preprocess(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
@@ -79,7 +76,6 @@ def preprocess(
         final_df['defeasstatus_F'] = [0 for row in range(len(final_df))]
     return final_df, propid
 
-
 def get_model() -> xgb.XGBClassifier:
     xgb_classifier = xgb.XGBClassifier()
     xgb_classifier.load_model('static/models/xgb_model.json')
@@ -98,7 +94,7 @@ def get_data_from_api():
     import requests
     yesterday_date = date.today() - timedelta(days=1)
     url = f"https://api.trepp.com/v2.0/datafeeds/daily?start_date={yesterday_date}"
-    
+
     headers = {
         'Authorization': f"Bearer {get_access_token()}",
     }
@@ -106,22 +102,36 @@ def get_data_from_api():
         url, 
         headers=headers,
     )
-    print(response)
     for res in response.json():
         for url in res['urls']:
             response = requests.get(url['url'])
             filename = 'temp.parquet'
-            # Get the current working directory:
             cwd = os.getcwd()
             with open(os.path.join(cwd, filename), 'wb') as f:
                 f.write(response.content)
-            
             return filename
-            
-
 
 @shared_task
-def main(data_file, samples):
+def main(samples):
+    import requests
+    yesterday_date = date.today() - timedelta(days=1)
+    url = f"https://api.trepp.com/v2.0/datafeeds/daily?start_date={yesterday_date}"
+
+    headers = {
+        'Authorization': f"Bearer {get_access_token()}",
+    }
+    response = requests.get(
+        url, 
+        headers=headers,
+    )
+    for res in response.json():
+        for url in res['urls']:
+            response = requests.get(url['url'])
+            filename = 'temp.parquet'
+            cwd = os.getcwd()
+            with open(os.path.join(cwd, filename), 'wb') as f:
+                f.write(response.content)
+    data_file = filename
     print("working...")
     df = get_data(data_file).head(samples)
     final_df, propid = preprocess(df)

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .utils import get_data_from_api, main
+from .utils import get_data_from_api
 from .models import Data
 import json
 import os
@@ -8,8 +8,8 @@ from django.core.paginator import Paginator, PageNotAnInteger
 from .tasks import *
 
 def refresh_data(request):
-    filename = get_data_from_api()
-    main.delay(filename, samples=10000000)
+    # filename = get_data_from_api()
+    main.delay(samples=10000000)
     return redirect("get_preds")
 
 def get_preds(request):

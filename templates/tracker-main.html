@@ -88,13 +88,17 @@
                             <tbody>
                                 {% for prospect in object_list %}
                                 <tr>
-
                                     <td>{{ prospect.name }}</td>
                                     <td>
                                         <div class="badge badge-{{ prospect.get_progress_class }}-lighten">{{ prospect.get_status_display }}</div>
                                     </td>
                                     <td class="">
-                                        <div series="{{ prospect.get_document_types_series }}" class="progress-chart"></div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ prospect.get_approved_document_percent }}%"></div>
+                                            <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ prospect.get_awaiting_document_percent }}%"></div>
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ prospect.get_pending_document_percent }}%"></div>
+                                            <div class="progress-bar bg-error" role="progressbar" style="width: {{ prospect.get_rejected_document_percent }}%"></div>
+                                        </div>
                                     </td>
                                     <td>{{ prospect.last_updated }} </td>
                                     <td class="table-action">
@@ -105,7 +109,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div> <!-- end table-responsive-->
+                    </div>
 
                 </div> <!-- end card body-->
             </div> <!-- end card -->

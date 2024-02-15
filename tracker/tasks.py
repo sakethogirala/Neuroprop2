@@ -36,36 +36,42 @@ def get_openai_document_feedback_status(self, document_pk):
     document = Document.objects.get(pk=document_pk)
     feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
     print(feedback)
-    
-    if feedback:
-        document.smart_checked = True
-        document.openai_feedback_time = timezone.now()
-        document.feedback = feedback["feedback"]
-        document_correct = feedback["correct"]
-        if document_correct:
-            document.status = "pending"
-            document.client_feedback = "Document type approved. Waiting for approval."
-        else:
-            document.status = "rejected"
-            document.client_feedback = feedback["feedback"]
-            # send_rejected_upload.delay(document_pk)
-            document.notify_document_rejected()
-
-        document.save()
-        document.document_type.staff_notifications = True
-        document.document_type.save()
-    else:
-        try:
-            # Retry the task
-            self.retry(countdown=20, max_retries=10)
-        except MaxRetriesExceededError:
-            print("max tried")
-            # Handle the situation after max retries are exceeded
+    try:
+        if feedback:
             document.smart_checked = True
-            document.status = "pending"
-            document.feedback = "AI was not able to analyze the file."
-            document.save()
+            document.openai_feedback_time = timezone.now()
+            document.feedback = feedback["feedback"]
+            document_correct = feedback["correct"]
+            if document_correct:
+                document.status = "pending"
+                document.client_feedback = "Document type approved. Waiting for approval."
+            else:
+                document.status = "rejected"
+                document.client_feedback = feedback["feedback"]
+                # send_rejected_upload.delay(document_pk)
+                document.notify_document_rejected()
 
+            document.save()
+            document.document_type.staff_notifications = True
+            document.document_type.save()
+        else:
+            try:
+                # Retry the task
+                self.retry(countdown=20, max_retries=10)
+            except MaxRetriesExceededError:
+                print("max tried")
+                # Handle the situation after max retries are exceeded
+                document.smart_checked = True
+                document.status = "pending"
+                document.feedback = "AI was not able to analyze the file."
+                document.save()
+    except Exception as e:
+        print("error: ", e)
+        # Handle the situation after max retries are exceeded
+        document.smart_checked = True
+        document.status = "pending"
+        document.feedback = "AI was not able to analyze the file."
+        document.save() 
 
 @shared_task
 def send_rejected_upload(document_pk):

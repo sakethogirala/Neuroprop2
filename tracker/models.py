@@ -103,22 +103,29 @@ class Document(models.Model):
         self.openai_file_id = file.id
         self.save()
         return file.id
-        
+            
     def openai_get_result(self, client, thread_id, run_id):
-        run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
-        print(run.status)
-        if run.status == "requires_action":
-            print("REQUIRED ACTION \n")
-            call_id = run.required_action.submit_tool_outputs.tool_calls[0].id
-            output = json.loads(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments)
-            print(output)
-            return output
-        if run.status == "completed":
-            messages = client.beta.threads.messages.list(thread_id=thread_id)
-            for message in messages:
-                value = message.content[0].text.value
-                return value
-        return False
+        try:
+            run = client.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
+            print(run.status)
+            if run.status == "requires_action":
+                print("REQUIRED ACTION \n")
+                call_id = run.required_action.submit_tool_outputs.tool_calls[0].id
+                output = json.loads(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments)
+                print(output)
+                return output
+            if run.status == "completed":
+                messages = client.beta.threads.messages.list(thread_id=thread_id)
+                for message in messages:
+                    if message.content:  # Check if message.content is not empty
+                        value = message.content[0].text.value
+                        return value
+            return False
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            # Optionally, return or handle the error in a more specific way
+            return False
+
 
     def notify_document_rejected(self):
         subject = f"NeuroProp - {self.name} Rejected"
