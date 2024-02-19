@@ -5,13 +5,21 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from urllib.parse import quote_plus
-class Data(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True,  editable=True, null=False)
-    data = models.JSONField(null=True)
 
+class DataUpload(models.Model):
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="data_uploads", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(upload_to="data-uploads/", null=True, blank=True)
+    analyze_start_time = models.DateTimeField(null=True, blank=True)
+    analyze_end_time = models.DateTimeField(null=True, blank=True)
+
+    def get_prospects_size(self):
+        return self.dataUploads.all().count()
 class ProspectData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,  editable=True, null=False)
     data = models.JSONField(null=True)
+    upload = models.ForeignKey(DataUpload, null=True, blank=True, related_name="dataUploads", on_delete=models.CASCADE)
+
 class Address(models.Model):
     address = models.CharField(max_length=256, blank=True)
     address2 = models.CharField(max_length=256, blank=True, null=True)
@@ -127,16 +135,16 @@ class Prospect(models.Model):
     
     def get_document_types_series(self):
         return [self.document_types.filter(status="approved").count(), self.document_types.filter(status="pending").count(), self.document_types.filter(status="not_uploaded").count(), self.document_types.filter(status="rejected").count()]
-    
-    def get_approved_document_percent(self):
-        return int((self.document_types.filter(status="approved").count() / self.document_types.all().count()) * 100)
-    def get_awaiting_document_percent(self):
-        return int((self.document_types.filter(status="not_uploaded").count() / self.document_types.all().count()) * 100)
-    def get_pending_document_percent(self):
-        return int((self.document_types.filter(status="pending").count() / self.document_types.all().count()) * 100)
-    def get_rejected_document_percent(self):
-        return int((self.document_types.filter(status="rejected").count() / self.document_types.all().count()) * 100)
 
+    def get_document_progress(self):
+        approved = self.document_types.filter(status="approved").count()
+        return f"{approved} / {self.document_types.all().count()}"
+
+    def get_document_types_sorting(self):
+        string = ""
+        for doc_type in self.document_types.all():
+            string += f"{doc_type.general_name}, "
+        return string
 
 def get_image_path(instance, filename):
     return f"documents/{instance.prospect.uid}/{filename}"

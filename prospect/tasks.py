@@ -53,11 +53,10 @@ def preprocess_data(file_path):
     final_df.fillna({"defeasstatus": 0 ,"modprepaypenamt": 0, "vacancyrate": 0, "longitude": -1, "latitude": -1, "occrate": -1, "curdlqcode":0}, inplace=True)
     df = final_df.dropna()
 
-    # Add any necessary preprocessing steps here
     propid = df['loanuniversepropid']
     today = datetime.date.today()
     try:
-        df['months_passed'] = df['originationdt'].apply(lambda x: today - datetime.datetime.strptime(x, "%Y-%m-%d").date())
+        df['months_passed'] = df['originationdt'].apply(lambda x: today - datetime.datetime.strptime(x, "%m/%d/%y").date())
     except:
         df['months_passed'] = df['originationdt'].apply(lambda x: today - x)
     df['months_passed'] = df['months_passed'].apply(lambda x: x.days // 30)
@@ -72,6 +71,7 @@ def preprocess_data(file_path):
     if 'defeasstatus_F' not in final_df:
         final_df['defeasstatus_F'] = [0 for row in range(len(final_df))]
     final_df = final_df.astype(float)
+    print("final df: ", final_df)
     return final_df, propid
 
 # Get the model ready for predictions
@@ -113,3 +113,42 @@ def process_and_store_data():
         prospect_data.save()
         # ProspectData.objects.create(data=row.to_dict())
     os.remove(data_file)
+
+
+@shared_task
+def process_custom_data(data_upload_pk):
+    print("processing custom data celery...")
+    from .models import DataUpload
+    from django.utils import timezone
+    data_upload = DataUpload.objects.get(pk = data_upload_pk)
+    data_upload.analyze_start_time = timezone.now()
+    data_upload.save()
+    try:
+        file_path = data_upload.file.path
+        print("done 1")
+        df, propid = preprocess_data(file_path)
+        print("done 2")
+        predictions = make_predictions(df)
+        print("done 3")
+    except Exception as e:
+        print("error: ", e)
+
+
+    if file_path.endswith('.csv'):
+        newdf = pd.read_csv(file_path)
+    columns_of_interest = ["propname", "city", "loanuniversepropid"]
+    newdf = newdf[columns_of_interest]
+    filtered_df = newdf[newdf['loanuniversepropid'].isin(propid)]
+    filtered_df['predictions'] = predictions
+
+    for _, row in filtered_df.iterrows():
+        prospect_data = ProspectData(
+            data=row.to_dict(),
+            upload = data_upload
+        )
+        prospect_data.save()
+    
+    data_upload.analyze_end_time = timezone.now()
+    data_upload.save()
+
+

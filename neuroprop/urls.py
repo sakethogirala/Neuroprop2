@@ -11,6 +11,8 @@ urlpatterns = [
     path("tracker/", include("tracker.urls")),
     path("prospect/", include("prospect.urls")),
     path("market/", include("market.urls")),
+    path("sync/", include("sync.urls")),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

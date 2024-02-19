@@ -6,7 +6,6 @@ import requests
 import pandas as pd
 import json
 import datetime
-from .models import Data
 from django.templatetags.static import static
 import xgboost as xgb
 import os

@@ -1,0 +1,25 @@
+                                                    
+<div id="smart-sort-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Smart Sort</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <form enctype="multipart/form-data" method="POST" action="{% url 'smart-sort' prospect.pk %}">{% csrf_token %}
+            <div class="modal-body">
+
+            <div class="mb-3">
+            <label for="formFile" class="form-label">File to be sorted.</label>
+            <input name="file" class="form-control" type="file" id="formFile">
+            </div>
+                <input type="hidden" name="prospect-pk" value="{{ prospect.pk }}">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary disabled">Submit</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>

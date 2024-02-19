@@ -20,10 +20,11 @@ from django.template.loader import render_to_string
 from . import DOCUMENT, DOCUMENT_TYPE
 from django.db.models import Q
 from .tasks import *
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
-class TrackerMain(ListView):
+class TrackerMain(LoginRequiredMixin, ListView):
     model = Prospect
     ordering = ["-created_at"]
     paginate_by = 20  # if pagination is desired
@@ -43,7 +44,6 @@ def tracker_detail(request, prospect_pk, document_type_pk=None):
         return redirect(reverse("onboard_client", kwargs={"prospect_uid": prospect.uid}))
 
     if not document_type_pk:
-        print("get it")
         document_type = get_object_or_404(DocumentType, pk = prospect.get_next_document_type())
     else:
         document_type = get_object_or_404(DocumentType, pk = document_type_pk)
@@ -340,3 +340,18 @@ def onboard_client(request, prospect_uid):
 
     }
     return render(request, "onboard-client.html", context)
+
+@login_required
+def smart_sort(request, prospect_pk):
+    prospect = get_object_or_404(Prospect, pk = prospect_pk)
+    print(request.POST)
+    print(request.FILES)
+    data = request.POST
+    file = request.FILES.get("file")
+    document = Document.objects.create(
+        uploaded_by=request.user,
+        file=file
+    )
+    start_openai_document_sort.delay(document.pk, prospect.pk)
+    messages.success(request, "Your files are being smart sorted. We'll notify you once it's finished.")
+    return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk}))

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/jquery-jvectormap.css' %}">
+<style>
+    .dropzones {
+        border: 2px dashed var(--ct-border-color);
+        background: var(--ct-input-bg-custom);
+        border-radius: 6px;
+        cursor: pointer;
+        min-height: 150px;
+        padding: 20px
+    }
+
+    .dropzones .dz-message {
+        text-align: center;
+        margin: 2rem 0
+    }
+
+    .dropzones.dz-started .dz-message {
+        display: none
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Smart Prospecting</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Upload Data</h4>
+                </div>
+                <div class="card-body">
+                    <form enctype="multipart/form-data" action="{% url 'upload_custom_preds_data' %}" method="post"
+                        class="dropzone" id="fileDropzone" data-plugin="dropzone">{% csrf_token %}
+
+                        <div class="dz-message needsclick">
+                            <i class="h1 text-muted ri-upload-cloud-2-line"></i>
+                            <h3>Drop files here or click to upload.</h3>
+                            <!-- <span class="text-muted font-13">(This is just a demo dropzone. Selected files are
+            <strong>not</strong> actually uploaded.)</span> -->
+                        </div>
+                    </form>
+                    <div style="display: none;" id="document-loading">
+                        <div class="d-flex justify-content-center align-items-center my-5 flex-column">
+                            <div class="spinner-border avatar-md" role="status"></div>
+                            <div class="fw-bold mt-2" id="document-loading-text">Uploading file. Do not reload page!</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div> <!-- end card-->
+        </div>
+    </div>
+    <div class="row">
+        {% for upload in data_uploads %}
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4>{{ upload.get_prospects_size }} Analyzed</h4>
+                    <div class="mb-3">
+                        <div class="">Original Data File: <a target="_blank" href="{{ upload.file.url }}">{{ upload.file }}</a></div>
+                        <div class="text-muted">Uploaded {{ upload.created_at }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <h5 class="mb-0">Smart Prospecting</h5>
+                        <div class="">Started: {{ upload.analyze_start_time }}</div>
+                        <div class="">Finished: {{ upload.analyze_end_time }}</div>
+                    </div>
+
+                    <div class="row g-1">
+                        {% if upload.analyze_end_time %}
+                        <div class="col-12 col-lg-6">
+                            <a class="btn btn-primary w-100" href="{% url 'custom_data_preds_detail' upload.pk %}">View</a>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <a class="btn btn-success w-100 disabled" href="">Download .csv</a>
+                        </div>
+
+                        {% else %}
+                        <div class="col-12">
+                            <a disabled class="btn btn-secondary w-100 disabled" href="">Analyzing File...</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/dropzone.js' %}"></script>
+<script>
+    dropzone = new Dropzone("#fileDropzone", {
+    acceptedFiles: "text/csv, application/vnd.ms-excel",
+    });
+    dropzone.on("sending", function (file, xhr, formData) {
+        document.getElementById("fileDropzone").style.display = "none";
+        document.getElementById("document-loading").style.display = "block";
+
+        });
+        dropzone.on("success", function (file, response) {
+            // Refresh the page
+            console.log(file);
+            console.log(response)
+            window.location.reload();
+        });
+</script>
+{% endblock %}

@@ -378,7 +378,19 @@
             <div class="card">
                 <div class="card-body">
                     <h4 class="header-title">Documents</h4>
+                    <div>{{ prospect.get_document_types_sorting }}</div>
                     <div class="list-group list-group-flush">
+                        <a data-bs-toggle="modal"
+                        data-bs-target="#smart-sort-modal"
+                        class="position-relative document_type list-group-item d-flex justify-content-between align-items-center {% if current_document_type == document_type %}active{% endif %}">
+                        Smart Sort
+                        <span class="">
+                            <i style="font-size: 18px;" class="bi bi-stars"></i>
+                        </span>
+                        <!-- {% if document_type.staff_notifications %}
+                        <span class="position-absolute top-50 start-100 translate-middle p-1 bg-danger border rounded-circle"></span>
+                        {% endif %} -->
+                    </a>
                         {% for document_type in document_types %}
                         <a href="{% url 'tracker-detail' prospect.pk document_type.pk %}"
                             class="position-relative document_type list-group-item d-flex justify-content-between align-items-center {% if current_document_type == document_type %}active{% endif %}">
@@ -386,10 +398,6 @@
                             <span class="p-1 bg-{{ document_type.get_status_class }} rounded-circle">
                                 <span class="visually-hidden">{{ document_type.status }}</span>
                             </span>
-
-                            <!-- {% if document_type.staff_notifications %}
-                            <span class="position-absolute top-50 start-100 translate-middle p-1 bg-danger border rounded-circle"></span>
-                            {% endif %} -->
                         </a>
                         {% endfor %}
                     </div>
@@ -403,6 +411,7 @@
 {% include 'includes/send-to-user-modal.html' %}
 {% include 'includes/send-client-feedback-modal.html' %}
 {% include 'includes/ask-question-modal.html' %}
+{% include 'includes/smart-sort-modal.html' %}
 
 {% endblock %}
 
@@ -414,7 +423,6 @@
         document_type_btns.addEventListener("click", )
     }
 </script>
-<script src="{% static 'js/upload-document.js' %}"></script>
 <script src="{% static 'js/dropzone.js' %}"></script>
 <script src="{% static 'js/component.fileupload.js' %}"></script>
 <script>

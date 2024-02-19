@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/jquery-jvectormap.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Smart Prospecting</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Results</h4>
+                    <a href="{% url 'refresh_data' %}" class="btn btn-primary">Refresh Data</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-centered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Property name</th>
+                                <th>City</th>
+                                <th>Loan Balance</th>
+                                <th>Likelihood</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            {% for entry in data %}
+                            <tr>
+                                <td>{{entry.data.propname}}</td>
+                                <td>{{entry.data.city}}</td>
+                                <td>{{entry.data.loanuniversepropid}}</td>
+                                <td class="text-center">{% include 'includes/score-badge.html' with score=entry.data.predictions %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                    {% include 'includes/pagination.html' with page_obj=data %}
+                </div>
+
+            </div> <!-- end card-->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

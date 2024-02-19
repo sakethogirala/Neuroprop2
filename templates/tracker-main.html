@@ -11,7 +11,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <!-- <div class="row">
         <div class="col-12">
             <div class="card widget-inline">
                 <div class="card-body p-0">
@@ -56,11 +56,11 @@
                             </div>
                         </div>
 
-                    </div> <!-- end row -->
+                    </div>
                 </div>
-            </div> <!-- end card-box-->
-        </div> <!-- end col-->
-    </div>
+            </div>
+        </div>
+    </div> -->
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -93,12 +93,7 @@
                                         <div class="badge badge-{{ prospect.get_progress_class }}-lighten">{{ prospect.get_status_display }}</div>
                                     </td>
                                     <td class="">
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ prospect.get_approved_document_percent }}%"></div>
-                                            <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ prospect.get_awaiting_document_percent }}%"></div>
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ prospect.get_pending_document_percent }}%"></div>
-                                            <div class="progress-bar bg-error" role="progressbar" style="width: {{ prospect.get_rejected_document_percent }}%"></div>
-                                        </div>
+                                        <div>{{ prospect.get_document_progress }}</div>
                                     </td>
                                     <td>{{ prospect.last_updated }} </td>
                                     <td class="table-action">

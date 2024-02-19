@@ -9,7 +9,6 @@ class DOCUMENT_TYPE:
         
     ]
 
-
 class DOCUMENT:
 
     STATUS_CHOICES = [
@@ -36,7 +35,7 @@ class DOCUMENT:
         # Sponsor Documents
         ("Personal Financial Statement", "SponsorFinancialStatement", "Net worth and liquidity of the sponsor."),
         ("Credit Report", "SponsorCreditReport", "Credit history and score of the sponsor."),
-        ("Resume or Bio", "SponsorResume", "Demonstrating experience."),
+        ("Resume or Bio", "Resume", "Demonstrating experience."),
         ("Tax Returns (Last 2-3 Years)", "TaxReturns", "Personal and business tax documents for financial assessment."),
 
         # Legal and Compliance Documents

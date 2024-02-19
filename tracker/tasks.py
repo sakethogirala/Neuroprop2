@@ -100,3 +100,60 @@ def send_rejected_upload(document_pk):
             html_message=html,
             fail_silently=False
         )
+
+
+
+@shared_task
+def start_openai_document_sort(document_pk, prospect_pk):
+    from .models import Document
+    from prospect.models import Prospect
+    document = Document.objects.get(pk = document_pk)
+    prospect = Prospect.objects.get(pk = prospect_pk)
+    thread = client.beta.threads.create()
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=f"Sort this document attatched. No matter what open the file with ID {document.openai_file_id} and get it's content with whatever it takes and using any methods. The possible document types are {prospect.get_document_types_sorting()}",
+        file_ids=[document.openai_file_id,]
+    )
+    run = client.beta.threads.runs.create(
+        thread_id=thread.id,
+        assistant_id=settings.OPENAI_DOC_FEEDBACK_ID,
+    )
+    document.openai_document_sort_run_id = run.id
+    document.openai_document_sort_thread_id = run.thread_id
+    document.save()
+    get_openai_document_sort_status.delay(document_pk, prospect_pk)
+
+
+from celery.exceptions import MaxRetriesExceededError
+
+@shared_task(bind=True)
+def get_openai_document_sort_status(self, document_pk, prospect_pk):
+    from .models import Document, DocumentType
+    from django.utils import timezone
+    document = Document.objects.get(pk=document_pk)
+    result = document.openai_get_result(client, document.openai_document_sort_thread_id, document.openai_document_sort_run_id)
+    print(result)
+    try:
+        if result:
+            document.document_sorted_time = timezone.now()
+            document_type = DocumentType.objects.filter(prospect__pk = prospect_pk, general_name = result["sort_result"])
+            if document_type.exists():
+                document.document_type = document_type.first()
+                print("worked")
+                print(document.document_type)
+            document.save()
+            document.document_type.staff_notifications = True
+        else:
+            try:
+                self.retry(countdown=10, max_retries=10)
+            except MaxRetriesExceededError:
+                print("max tried")
+                document.status = "pending"
+                document.feedback = "Not."
+                document.save()
+    except Exception as e:
+        print("error: ", e)
+        # Handle the situation after max retries are exceeded
+        document.save() 

@@ -3,3 +3,21 @@
     height: 12px;
     border-radius: 100%;
 }
+
+.dropzones {
+    border: 2px dashed var(--ct-border-color);
+    background: var(--ct-input-bg-custom);
+    border-radius: 6px;
+    cursor: pointer;
+    min-height: 150px;
+    padding: 20px
+}
+
+.dropzones .dz-message {
+    text-align: center;
+    margin: 2rem 0
+}
+
+.dropzones.dz-started .dz-message {
+    display: none
+}
