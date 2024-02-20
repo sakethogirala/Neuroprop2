@@ -13,7 +13,7 @@ def email_webhook(request):
             subject = data.get("subject")
             from_email = data.get("from_email")
             from_name = data.get("from_name")
-            lender_sync = LenderSync(
+            lender_sync = LenderSync.objects.create(
                 data = {
                     "body": body,
                     "subject": subject,
