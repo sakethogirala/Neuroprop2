@@ -10,4 +10,4 @@ class LenderSync(models.Model):
     status = models.CharField(choices=SYNC.LENDER_SYNC_CHOICES, max_length=100, default="unprocessed")
 
     def __str__(self) -> str:
-        return f"{self.created_at} {self.get_status_display}"
+        return f"{self.created_at}"
