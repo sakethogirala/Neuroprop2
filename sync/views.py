@@ -40,7 +40,7 @@ def email_webhook(request):
                 messages=messages,
                 response_format={"type": "json_object"}
             )
-            print(result)
+            print(response)
             result = response.choices[0].message.content
             print(result)
             try:
