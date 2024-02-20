@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'tracker',
     'market',
+    'sync',
     'jsonify'
 ]
 

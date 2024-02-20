@@ -37,11 +37,12 @@ class Lender(models.Model):
             return f"{self.title}"
     
 class Note(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name = "notes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name = "notes", null=True, blank=True)
     file = models.FileField(upload_to="notes/", null=True, blank=True)
     text = models.TextField(null=True, blank=True)
     lender = models.ForeignKey(Lender, on_delete=models.CASCADE, related_name = "notes")
     is_private = models.BooleanField(default = True)
+    is_smart = models.BooleanField(default = False)
     created_at = models.DateTimeField(auto_now_add=True,  editable=True)
 
     def __str__(self) -> str:

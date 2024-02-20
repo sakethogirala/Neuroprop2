@@ -56,7 +56,6 @@ def lenders_search(request):
     html = render_to_string("includes/lenders-table.html", context={"lenders": query})
     return JsonResponse({"html": html}, safe=False)
 
-
 @login_required
 def create_lender(request):
     if request.method == "POST":
