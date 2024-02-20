@@ -31,7 +31,7 @@ def email_webhook(request):
             )
 
             messages = [
-                {"role": "system", "content": "The following is an email content. Analyze if it is relevant for updating lender information in a commercial real estate lender database. Look for updates on loan terms, contact information, property types covered, states of operation, or any new services offered. Provide a concise note on the content that includes any found updates. Respond with a structured format: {'is_relevant': true, 'note': 'Found updates: [details of updates]'} for relevant and {'is_relevant': false, 'note': ''} for not relevant."},
+                {"role": "system", "content": "The following is an email content. Analyze if it is relevant for updating lender information in a commercial real estate lender database. Look for updates on loan terms, contact information, property types covered, states of operation, or any new services offered. Provide a concise note on the content that includes any found updates. Respond with a structured json format: {'is_relevant': true, 'note': 'Found updates: [details of updates]'} for relevant and {'is_relevant': false, 'note': ''} for not relevant."},
                 {"role": "user", "content": f"Subject: {sync.data['subject']}\n\nFrom: {sync.data['from_name']}\n\n{sync.data['body']}"},
             ]
             print("messages: ", messages)
