@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Lender Syncs</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% for sync in syncs %}
+        <div class="col-12 col-lg-6">
+            <div class="card ribbon-box">
+
+                <div class="card-body">
+                    <div class="ribbon ribbon-{{ sync.get_status_class }} float-end">{{ sync.get_status_display }}</div>
+                    <h5 class="float-start mt-0">{{ sync.created_at }}</h5>
+                    <div class="ribbon-content">
+                    {% if sync.lender %}
+                    <div>
+                    Matched to <a href="{% url 'lenders' %}">{{ sync.lender.title }}</a>
+                </div>
+                <div class="mb-2"></div>
+                    {% endif %}
+                    <div><b>From Email:</b> {{ sync.data.from_email }}</div>
+                    <div><b>Subject:</b> {{ sync.data.subject }}</div>
+                    <div><b>Body:</b> {{ sync.data.body|truncatewords:200 }}</div>
+                </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

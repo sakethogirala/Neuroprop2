@@ -69,3 +69,12 @@ def email_webhook(request):
                 print("Failed to parse the model's response as JSON.")
             return HttpResponse("Hello World")
         return HttpResponse("Secret failed")
+    
+
+def lender_syncs(request):
+    lender_syncs = LenderSync.objects.all()
+
+    context = {
+        "syncs": lender_syncs
+    }
+    return render(request, "sync/lender_syncs.html", context)
