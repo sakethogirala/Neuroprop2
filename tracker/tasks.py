@@ -70,7 +70,7 @@ def get_openai_document_feedback_status(self, document_pk):
         # Handle the situation after max retries are exceeded
         document.smart_checked = True
         document.status = "pending"
-        document.feedback = "AI was not able to analyze the file."
+        document.feedback = "AI is analyzing file. Please wait..."
         document.save() 
 
 @shared_task
