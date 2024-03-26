@@ -79,7 +79,13 @@ def upload_document(request):
             document.uploaded_by = request.user
             document.file = document_file
             document.name = f"{document_type.general_name}_{document_type.document_count}"
+            document.smart_checked = True
             document.save()
+            response = {
+                "status": "success",
+                "document_pk": document.pk
+            }
+            return JsonResponse(response, safe=False)
 
         if document_type.status == "not_uploaded":
             document_type.status = "pending"
@@ -93,14 +99,6 @@ def upload_document(request):
         document_type.document_count += 1
         document_type.save()
 
-        if document_type.is_image:
-            document.smart_checked = True
-            document.save()
-            response = {
-                "status": "success",
-                "document_pk": document.pk
-            }
-            return JsonResponse(response, safe=False)
         
         print("right here")
         # # Start AI Review

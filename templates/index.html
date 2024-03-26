@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
+
 {% block css %}
 
 {% endblock %}
@@ -19,8 +21,103 @@
     </div>
     <!-- end page title -->
 
+<div class="row">
+    <div class="col-lg-6">
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            <i class="mdi mdi-domain widget-icon"></i>
+                        </div>
+                        <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Projects</h5>
+                        <h3 class="mt-3 mb-3">{{ properties|length }}</h3>
+                        <p class="mb-0 text-muted">
+                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> {{ properties_added_this_month }}</span>
+                            <span class="text-nowrap">Created this month</span>  
+                        </p>
+                    </div> <!-- end card-body-->
+                </div> <!-- end card-->
+            </div> <!-- end col-->
+
+            <div class="col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            <i class="mdi mdi-format-list-checks widget-icon"></i>
+                        </div>
+                        <h5 class="text-muted fw-normal mt-0" title="Number of Orders">Tasks</h5>
+                        <h3 class="mt-3 mb-3">{{ task_count }}</h3>
+                        <p class="mb-0 text-muted">
+                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> {{ tasks_this_week }}</span>
+                            <span class="text-nowrap">This week</span>
+                        </p>
+                    </div> <!-- end card-body-->
+                </div> <!-- end card-->
+            </div> <!-- end col-->
+        </div> <!-- end row -->
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            <i class="mdi mdi-cash-multiple widget-icon"></i>
+                        </div>
+                        <h5 class="text-muted fw-normal mt-0" title="Average Revenue">Lenders</h5>
+                        <h3 class="mt-3 mb-3">{{ lender_count }}</h3>
+                        <p class="mb-0 text-muted">
+                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> {{ lenders_added_this_month }}</span>
+                            <span class="text-nowrap">Created this month</span>  
+                        </p>
+                    </div> <!-- end card-body-->
+                </div> <!-- end card-->
+            </div> <!-- end col-->
+
+            <div class="col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            <i class="mdi mdi-email-fast-outline widget-icon"></i>
+                        </div>
+                        <h5 class="text-muted fw-normal mt-0" title="Growth">Outreaches</h5>
+                        <h3 class="mt-3 mb-3">{{ outreaches|length }}</h3>
+                        <p class="mb-0 text-muted">
+                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> {{ outreaches_added_this_month }}</span>
+                            <span class="text-nowrap">Created this month</span>
+                        </p>
+                    </div> <!-- end card-body-->
+                </div> <!-- end card-->
+            </div> <!-- end col-->
+        </div> <!-- end row -->
+
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header mb-0 p-2">
+                <h4 class="header-title">Tasks</h4>
+            </div>
+            <div class="card-body p-2" data-simplebar style="max-height: 300px;">
+            <div class="list-group">
+                {% for task in tasks %}
+                <a href="{% url 'tracker-detail' task.document_type.prospect.pk task.document_type.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <h5 class="mb-1">Review {{ task.name }}</h5>
+                        <small class="text-muted">{{ task.created_at|timesince }} ago</small>
+                    </div>
+                    <div>{{ task.document_type.prospect.name }} project uploaded by {{ task.uploaded_by }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="header-title">Projects</h4>
@@ -37,20 +134,24 @@
                                         <span class="text-muted font-13">Created {{ property.created_at | timesince }} ago</span>
                                     </td>
                                     <td>
+                                        <div class="text-muted font-12">{{ property.address.get_address|linebreaks }}</div>
+                                    </td>
+                                    <td>
                                         <span class="text-muted font-13">Status</span> <br>
-                                        <span class="badge badge-{{ property.get_progress_class }}-lighten">{{ property.get_status_display }}</span>
+                                        <span class="badge badge-{{ property.get_progress_class }}-lighten mb-1">{{ property.get_status_display }}</span>
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ property.get_document_progress_percentage }}%;" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <span class="text-muted font-13">Assigned by</span>
-                                        <h5 class="font-14 mt-1 fw-normal"><a href="mailto:{{ property.created_by.email }}">{{ property.created_by.email }}</a></h5>
+                                        <span class="text-muted font-13">Loan Amount</span>
+                                        <h5 class="font-14 mt-1 fw-normal">${{ property.amount|intcomma }}</h5>
                                     </td>
                                     <td>
-                                        <span class="text-muted font-13">Doc Types Left</span>
-                                        <h5 class="font-14 mt-1 fw-normal">{{ property.get_todo_count }}</h5>
-                                    </td>
-                                    <td>
-                                        <span class="text-muted font-13">Docs to Fix</span>
-                                        <h5 class="font-14 mt-1 fw-normal">{{ property.get_tofix_count }}</h5>
+                                        <span class="text-muted font-13">Tasks</span>
+                                        <div>
+                                            <span class="badge bg-primary">{{ property.get_todo_count }}</span>
+                                        </div>
                                     </td>
                                     
                                 </tr>
@@ -64,22 +165,40 @@
                 </div> <!-- end card body-->
             </div> <!-- end card -->
         </div><!-- end col-->
-        <div class="col-lg-4">
+
+        <!-- <div class="col-12 col-lg-6">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex card-header justify-content-between align-items-center">
                     <h4 class="header-title">Contact</h4>
                 </div>
 
                 <div class="card-body pt-0">
-
-                        <div>{% lorem %}</div>
-
-                </div> <!-- end card body-->
-            </div> <!-- end card -->
-        </div><!-- end col-->
-
+                    <div class="d-flex justify-content-between">
+                        <div class="flex-column">
+                            <b>Sean Kilbane</b>
+                            <div class="text-muted">General</div>
+                        </div>
+                        <div class="flex-column">
+                            <a href="mailto:sean@dim3nsion.co">sean@dim3nsion.co</a>
+                            <div>123-456-7899</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <div class="flex-column">
+                            <b>Sam Suchin</b>
+                            <div class="text-muted">Technical Questions</div>
+                        </div>
+                        <div class="flex-column">
+                            <a href="mailto:sam@dim3nsion.co">sam@dim3nsion.co</a>
+                            <div>123-456-7899</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- end row-->
+nd row-->
 
     
 </div>

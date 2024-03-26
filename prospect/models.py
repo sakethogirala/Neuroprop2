@@ -49,6 +49,7 @@ class Prospect(models.Model):
     status = models.CharField(choices=PROSPECT.STATUS_CHOICES, max_length=100, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now_add=True)
+    deadline = models.DateTimeField(null = True, blank = True)
     purpose = models.CharField(choices=PROSPECT.PURPOSE_CHOICES, max_length=100)
     property_type = models.CharField(choices=PROSPECT.PROPERTY_TYPE_CHOICES)
     users = models.ManyToManyField(get_user_model(), related_name="prospects")
@@ -96,6 +97,12 @@ class Prospect(models.Model):
         total = 0
         for doc in self.document_types.all():
             total += doc.get_tofix_count()
+        return total
+    
+    def get_tasks_count(self):
+        total = 0
+        for doc in self.document_types.all():
+            total += doc.get_review_count()
         return total
     
     def get_next_document_type(self):

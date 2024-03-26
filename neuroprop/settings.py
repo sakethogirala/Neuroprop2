@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'tracker',
     'market',
     'sync',
-    'jsonify'
+    'jsonify',
+    'django.contrib.humanize'
 ]
 
 MIDDLEWARE = [

@@ -27,7 +27,7 @@ class OUTREACH:
                 Unique Selling Point: Highlight what makes this property a good investment (e.g., location, high rental demand).
 
                 Detail the property's major features such as square footage, occupancy rates, and unique amenities.
-                Strategic Location: Located [insert distance] from [notable landmark or area, e.g., downtown], and [insert distance] from [another key landmark, e.g., a major university hospital]. This prime positioning ensures high visibility/accessibility, benefiting from [mention any specific advantages, e.g., heavy foot traffic, proximity to business hubs, etc.].
+                Strategic Location: Locatedd from [notable landmark or area, e.g., downtown], and from [another key landmark, e.g., a major university hospital]. This prime positioning ensures high visibility/accessibility, benefiting from [mention any specific advantages, e.g., heavy foot traffic, proximity to business hubs, etc.].
                 Financials: Provide a snapshot of financial details, including projected ROI and other relevant financial metrics.
                 Market Trends: Include insights on market trends, supported by visual comps, to underline the investment potential in the context of current and forecasted market conditions.
 
@@ -36,10 +36,9 @@ class OUTREACH:
                 Reputation: Summarize any industry recognitions, awards, or testimonials that underscore the borrower's reputation in the market.
 
                 Encourage the lender to express interest, pass, or request more detailed information.
-                Contact Details: Provide your direct contact information for follow-up.
-                Schedule a meeting directly on my calendar to discuss details and answer any questions.
+                
+                The email should be concise and have headers for the different features.
 
-                We look forward to hearing from you. 
                 """
     EMAIL_EXAMPLE = """
 We haven't met - but would like to kick off a relationship and trade some of our incoming deal flow. 

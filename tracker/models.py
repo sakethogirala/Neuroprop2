@@ -41,6 +41,9 @@ class DocumentType(models.Model):
     def get_tofix_count(self):
         return len(self.documents.filter(status="rejected"))
 
+    def get_review_count(self):
+        return len(self.documents.filter(status="pending"))
+
 class Document(models.Model):
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="uploaded_documents")
     document_type = models.ForeignKey(DocumentType, on_delete=models.CASCADE, related_name="documents", null=True)

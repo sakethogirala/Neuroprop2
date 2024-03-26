@@ -29,49 +29,103 @@ def start_openai_document_feedback(document_pk):
 
 from celery.exceptions import MaxRetriesExceededError
 
-@shared_task(bind=True)  # Use bind=True to bind the task instance to 'self'
+# @shared_task(bind=True)  # Use bind=True to bind the task instance to 'self'
+# def get_openai_document_feedback_status(self, document_pk):
+#     from .models import Document
+#     from django.utils import timezone
+#     try:
+#         document = Document.objects.get(pk=document_pk)
+#         feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
+#         print(feedback)
+#         if feedback and 'correct' in feedback and 'feedback' in feedback:
+#             document.smart_checked = True
+#             document.openai_feedback_time = timezone.now()
+#             document.feedback = feedback["feedback"]
+#             document_correct = feedback["correct"]
+#             if document_correct:
+#                 document.status = "pending"
+#                 document.client_feedback = "Document type approved. Waiting for approval."
+#             else:
+#                 document.status = "rejected"
+#                 document.client_feedback = feedback["feedback"]
+#                 # send_rejected_upload.delay(document_pk)
+#                 document.notify_document_rejected()
+
+#             document.save()
+#             document.document_type.staff_notifications = True
+#             document.document_type.save()
+#         else:
+#             try:
+#                 # Retry the task
+#                 self.retry(countdown=20, max_retries=10)
+#             except MaxRetriesExceededError:
+#                 print("max tried")
+#                 # Handle the situation after max retries are exceeded
+#                 document.smart_checked = True
+#                 document.status = "pending"
+#                 document.feedback = "AI was not able to analyze the file."
+#                 document.save()
+#     except Exception as e:
+#         print("error: ", e)
+#         # Handle the situation after max retries are exceeded
+#         document.smart_checked = True
+#         document.status = "pending"
+#         document.feedback = "AI is analyzing file. Please wait..."
+#         document.save() 
+
+
+@shared_task(bind=True)
 def get_openai_document_feedback_status(self, document_pk):
     from .models import Document
     from django.utils import timezone
-    document = Document.objects.get(pk=document_pk)
-    feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
-    print(feedback)
+
     try:
-        if feedback:
+        document = Document.objects.get(pk=document_pk)
+        feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
+        print(feedback)
+
+        if feedback is False:
+            print("Result not ready, scheduling retry...")
+            self.retry(countdown=20, max_retries=10)
+        elif 'correct' in feedback and 'feedback' in feedback:
+            # Process valid feedback
             document.smart_checked = True
             document.openai_feedback_time = timezone.now()
             document.feedback = feedback["feedback"]
             document_correct = feedback["correct"]
-            if document_correct:
-                document.status = "pending"
-                document.client_feedback = "Document type approved. Waiting for approval."
-            else:
-                document.status = "rejected"
-                document.client_feedback = feedback["feedback"]
-                # send_rejected_upload.delay(document_pk)
-                document.notify_document_rejected()
 
+            document.status = "pending" if document_correct else "rejected"
+            document.client_feedback = "Document type approved. Waiting for approval." if document_correct else feedback["feedback"]
+            document.notify_document_rejected() if not document_correct else None
             document.save()
             document.document_type.staff_notifications = True
             document.document_type.save()
         else:
-            try:
-                # Retry the task
-                self.retry(countdown=20, max_retries=10)
-            except MaxRetriesExceededError:
-                print("max tried")
-                # Handle the situation after max retries are exceeded
-                document.smart_checked = True
-                document.status = "pending"
-                document.feedback = "AI was not able to analyze the file."
-                document.save()
+            # Handle invalid format or true error in data
+            message = "Feedback format invalid or missing expected keys."
+            # Common handler for scenarios where feedback is invalid or an error occurs
+            document.smart_checked = True
+            document.status = "pending"
+            document.feedback = message
+            document.save()
+
+    except MaxRetriesExceededError:
+            # Handle invalid format or true error in data
+            message = "Document could not be analyzed. Max Retries Attempted."
+            document.client_feedback = "Document could not be analyzed. Waiting for approval."
+            document.smart_checked = True
+            document.status = "pending"
+            document.feedback = message
+            document.save()
+
     except Exception as e:
-        print("error: ", e)
-        # Handle the situation after max retries are exceeded
+        print(f"An error occurred: {e}")
+        message = f"Document could not be analyzed. Error: {e}."
+        document.client_feedback = "Document could not be analyzed. Waiting for approval."
         document.smart_checked = True
         document.status = "pending"
-        document.feedback = "AI is analyzing file. Please wait..."
-        document.save() 
+        document.feedback = message
+        document.save()
 
 @shared_task
 def send_rejected_upload(document_pk):
