@@ -35,6 +35,17 @@ class TrackerMain(LoginRequiredMixin, ListView):
         context["purpose_choices"] = PROSPECT.PURPOSE_CHOICES
         context["property_type_choices"] = PROSPECT.PROPERTY_TYPE_CHOICES
         return context
+    
+@login_required
+def tracker_main(request):
+    prospects = Prospect.objects.filter(users=request.user).order_by("-created_at")
+    context = {
+        "object_list": prospects,
+        "total": prospects.count(),
+        "purpose_choices": PROSPECT.PURPOSE_CHOICES,
+        "property_type_choices": PROSPECT.PROPERTY_TYPE_CHOICES
+    }
+    return render(request, "tracker-main.html", context)
 
 def tracker_detail(request, prospect_pk, document_type_pk=None):
     prospect = get_object_or_404(Prospect, pk = prospect_pk)
