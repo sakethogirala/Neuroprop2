@@ -84,7 +84,7 @@ def get_openai_document_feedback_status(self, document_pk):
         feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
         print(feedback)
 
-        if feedback is False:
+        if not feedback:
             print("Result not ready, scheduling retry...")
             self.retry(countdown=20, max_retries=10)
         elif 'correct' in feedback and 'feedback' in feedback:
@@ -110,13 +110,13 @@ def get_openai_document_feedback_status(self, document_pk):
             document.save()
 
     except MaxRetriesExceededError:
-            # Handle invalid format or true error in data
-            message = "Document could not be analyzed. Max Retries Attempted."
-            document.client_feedback = "Document could not be analyzed. Waiting for approval."
-            document.smart_checked = True
-            document.status = "pending"
-            document.feedback = message
-            document.save()
+        # Handle invalid format or true error in data
+        message = "Document could not be analyzed. Max Retries Attempted."
+        document.client_feedback = "Document could not be analyzed. Waiting for approval."
+        document.smart_checked = True
+        document.status = "pending"
+        document.feedback = message
+        document.save()
 
     except Exception as e:
         print(f"An error occurred: {e}")

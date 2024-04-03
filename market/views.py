@@ -155,6 +155,7 @@ def edit_lender(request, lender_pk):
     }
     return render(request, "market/edit-lender.html", context)
 
+
 @login_required
 def create_outreach(request):
     if request.method == "POST":
@@ -163,9 +164,22 @@ def create_outreach(request):
         selected_lender_ids = lenders_string.split(',') if lenders_string else []
 
         selected_lenders = Lender.objects.filter(id__in=selected_lender_ids)
-        prospect = get_object_or_404(Prospect, uid = request.POST.get("prospect_uid"))
-        new_outreach, created = Outreach.objects.get_or_create(
-            name= f'{prospect.name} Outreach' if not name else name,
+        prospect = get_object_or_404(Prospect, uid=request.POST.get("prospect_uid"))
+
+        existing_outreach_count = Outreach.objects.filter(prospect=prospect).count()
+
+        if existing_outreach_count > 0:
+            if not name:
+                name = f'{prospect.name} Outreach #{existing_outreach_count + 1}'
+            else:
+                existing_similar_names = Outreach.objects.filter(name__startswith=name, prospect=prospect).count()
+                if existing_similar_names > 0:
+                    name = f"{name} #{existing_similar_names + 1}"
+        else:
+            name = f'{prospect.name} Outreach' if not name else name
+
+        new_outreach = Outreach.objects.create(
+            name=name,
             created_by=request.user,
             status='planned',
             prospect=prospect,

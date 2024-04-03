@@ -16,7 +16,7 @@ def openai_generate_outreach(outreach_pk):
     messages.append({"role": "system", "content": f"Project Details: {outreach.prospect.get_general_info()}"})
     print(messages)
     messages.append({"role": "system", "content": f"Email Framework: {OUTREACH.EMAIL_FRAMEWORK}\n Email Example: {OUTREACH.EMAIL_EXAMPLE}"})
-    messages.append({"role": "user", "content": f"You are an incredible commercial real estate loan officer who is contacting potenital lenders for this property. Write an email using the aforementioned property information and document underwriting information, using the aforementioned 'Email Framework' and 'Email Example' for inspiration. Use specific infomration from the documents supplied. Only return the email content and nothing else. Do not even include the subject or signing or intro. Format the email content nicely. Never return errors or reveal you are an AI."})
+    messages.append({"role": "user", "content": f"You are an incredible commercial real estate loan officer who is contacting potenital lenders for this property. Write an email using the aforementioned property information and document underwriting information, using the aforementioned 'Email Framework' and 'Email Example' for inspiration. Use specific infomration from the documents supplied. Only return the email content and nothing else. Do not even include the subject or signing or intro. Format the email content nicely. Never return errors or reveal you are an AI. Always have real values placed and don't use any placeholders."})
     print("messages: ", messages)
     response = client.chat.completions.create(
         model="gpt-4",
