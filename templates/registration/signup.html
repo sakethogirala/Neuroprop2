@@ -1,0 +1,55 @@
+{% extends 'accounts.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xxl-4 col-lg-5">
+                <div class="card">
+                    <!-- Logo -->
+                    <div class="card-header py-2 text-center bg-primary">
+                        <span><img width="200" src="{% static 'images/white.png' %}" alt="logo"></span>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="text-center w-75 m-auto">
+                            <h4 class="text-dark-50 text-center pb-0 fw-bold">Sign Up</h4>
+                            <p class="text-muted mb-4">Create your account to access NeuroProp.</p>
+                        </div>
+
+                        <form action="{% url 'signup' %}" method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                    {{ field|add_class:"form-control" }}
+                                    {% for error in field.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="mb-3 mb-0 text-center">
+                                <button class="btn btn-primary" type="submit">Sign Up</button>
+                            </div>
+                        </form>
+                    </div> <!-- end card-body -->
+                </div>
+                <!-- end card -->
+
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                        <p class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-muted ms-1"><b>Log In</b></a></p>
+                    </div> <!-- end col -->
+                </div>
+                <!-- end row -->
+
+            </div> <!-- end col -->
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- end container -->
+</div>
+{% endblock %}

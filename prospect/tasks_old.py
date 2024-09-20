@@ -54,30 +54,20 @@ def preprocess_dlq(row):
         return 1
     return row
 
-def preprocess(
-    df: pd.DataFrame,
-) -> pd.DataFrame:
+def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     propid = df['loanuniversepropid']
     today = datetime.date.today()
-    try:
-        df['months_passed'] = df['originationdt'].apply(lambda x: today - datetime.datetime.strptime(x, "%Y-%m-%d").date())
-    except:
-        df['months_passed'] = df['originationdt'].apply(lambda x: today - x)
-    df['months_passed'] = df['months_passed'].apply(lambda x: x.days // 30)
-    df.drop(['originationdt', 'modprepaypenamt', 'loanuniversepropid'], inplace=True, axis=1)
-    df['curdlqcode'] = df['curdlqcode'].apply(preprocess_dlq)
-    df['curdlqcode'] = df['curdlqcode'].apply(lambda x: float(x))
-    final_df = pd.get_dummies(df, columns=['defeasstatus'], drop_first=True)
-    if 'defeasstatus_P' not in final_df:
-        final_df['defeasstatus_P'] = [0 for row in range(len(final_df))]
-    if 'defeasstatus_N' not in final_df:
-        final_df['defeasstatus_N'] = [0 for row in range(len(final_df))]
-    if 'defeasstatus_F' not in final_df:
-        final_df['defeasstatus_F'] = [0 for row in range(len(final_df))]
-    return final_df, propid
+    df['months_passed'] = (today - pd.to_datetime(df['originationdt'])).dt.days // 30
+    df = df.drop(['originationdt', 'modprepaypenamt', 'loanuniversepropid'], axis=1)
+    df['curdlqcode'] = df['curdlqcode'].apply(preprocess_dlq).astype(float)
+    df = pd.get_dummies(df, columns=['defeasstatus'], prefix='defeasstatus')
+    for status in ['F', 'N', 'P']:
+        if f'defeasstatus_{status}' not in df.columns:
+            df[f'defeasstatus_{status}'] = 0
+    return df, propid
 
 def get_model() -> xgb.XGBClassifier:
-    xgb_classifier = xgb.XGBClassifier()
+    xgb_classifier = xgb.XGBClassifier(enable_categorical=True)
     xgb_classifier.load_model('static/models/xgb_model.json')
     return xgb_classifier
 

@@ -21,6 +21,7 @@ from . import DOCUMENT, DOCUMENT_TYPE
 from django.db.models import Q
 from .tasks import *
 from django.contrib.auth.mixins import LoginRequiredMixin
+from tracker.models import DocumentType
 
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -190,28 +191,32 @@ def override_document_check(request, document_uid):
 def create_prospect(request):
     if request.method == "POST":
         data = request.POST
-        print(data)
-        address = Address.objects.create(address=data.get("address"), address2=data.get("address2"), city=data.get("locality"), state=data.get("state"), postal_code=data.get("postcode"), country=data.get("country"))
-        name = data.get("name")
-        purpose = data.get("purpose")
-        property_type= data.get("property-type")
-        amount = data.get("amount")
+        address = Address.objects.create(
+            address=data.get("address"),
+            address2=data.get("address2"),
+            city=data.get("locality"),
+            state=data.get("state"),
+            postal_code=data.get("postcode"),
+            country=data.get("country")
+        )
         prospect = Prospect.objects.create(
-            created_by = request.user,
-            name = name,
-            purpose = purpose,
-            property_type = property_type,
-            amount = amount,
-            address = address
+            created_by=request.user,
+            name=data.get("name"),
+            purpose=data.get("purpose"),
+            property_type=data.get("property-type"),
+            amount=data.get("amount"),
+            address=address
         )
         prospect.users.add(request.user)
+        
         messages.success(request, "Prospect created!")
         return redirect(reverse("tracker-detail", kwargs={"prospect_pk": prospect.pk, "document_type_pk": prospect.get_next_document_type()}))
-    context = {
-        "purpose_choices": PROSPECT.PURPOSE_CHOICES,
-        "property_type_choices": PROSPECT.PROPERTY_TYPE_CHOICES
-    }
-    return render(request, "create-prospect.html", context)
+    else:
+        context = {
+            "purpose_choices": PROSPECT.PURPOSE_CHOICES,
+            "property_type_choices": PROSPECT.PROPERTY_TYPE_CHOICES
+        }
+        return render(request, "create-prospect.html", context)
 
 @login_required
 def delete_prospect(request, prospect_uid):

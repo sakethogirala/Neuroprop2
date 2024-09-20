@@ -55,6 +55,7 @@ class Prospect(models.Model):
     users = models.ManyToManyField(get_user_model(), related_name="prospects")
     amount = models.DecimalField(default=0.00, max_digits=20, decimal_places=2, null=True, blank=True)
     context = models.TextField(null = True, blank = True)
+    sreo_document = models.FileField(upload_to='sreo_documents/', null=True, blank=True)
 
     client_onboarded = models.BooleanField(default = False)
     client_scenario = models.JSONField(null = True, blank = True)
@@ -152,6 +153,11 @@ class Prospect(models.Model):
         for doc_type in self.document_types.all():
             string += f"{doc_type.general_name}, "
         return string
+    
+    def process_sreo(self):
+        if self.sreo_document:
+            from .tasks import process_sreo_document  # Import inside the method
+            process_sreo_document.delay(self.id)
 
 def get_image_path(instance, filename):
     return f"documents/{instance.prospect.uid}/{filename}"
@@ -162,3 +168,33 @@ class Photo(models.Model):
     image = models.ImageField(upload_to=get_image_path)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="uploaded_photos")
     created_at = models.DateTimeField(auto_now_add=True)
+
+#Created a model for extracting the SREO data
+class SREOData(models.Model):
+    property_name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    property_type = models.CharField(max_length=100)
+    number_of_units = models.IntegerField()
+    acquisition_date = models.DateField()
+    acquisition_cost = models.DecimalField(max_digits=15, decimal_places=2)
+    estimated_current_market_value = models.DecimalField(max_digits=15, decimal_places=2)
+    market_value_based = models.CharField(max_length=255)
+    lender_name = models.CharField(max_length=255)
+    contact_phone = models.CharField(max_length=20)
+    loan_number = models.CharField(max_length=100)
+    estimated_current_loan_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    gross_monthly_income = models.DecimalField(max_digits=15, decimal_places=2)
+    monthly_loan_payment = models.DecimalField(max_digits=15, decimal_places=2)
+    monthly_property_tax_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    average_monthly_expenses = models.DecimalField(max_digits=15, decimal_places=2)
+    monthly_cash_flow = models.DecimalField(max_digits=15, decimal_places=2)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    prospect = models.ForeignKey(Prospect, on_delete=models.CASCADE, related_name='sreo_data')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sreo_data_created')
+
+    class Meta:
+        ordering = ['-acquisition_date', 'property_name']  # Adjust as needed
+
+    def __str__(self):
+        return f"{self.property_name} - {self.address}"

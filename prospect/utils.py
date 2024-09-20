@@ -6,6 +6,35 @@ from django.templatetags.static import static
 import xgboost as xgb
 import os
 from datetime import date, timedelta
+from django.conf import settings
+
+def get_similar_properties_from_api(access_token, property_id):
+    url = f"https://api.trepp.com/v2.0/properties/{property_id}/similar"
+    headers = {
+        'Authorization': f"Bearer {access_token}",
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        properties = response.json()
+        # Add distance and price to each property (assuming these are not provided by the API)
+        for prop in properties:
+            prop['distance'] = calculate_distance(property_id, prop['id'])  # You need to implement this function
+            prop['price'] = get_property_price(prop['id'])  # You need to implement this function
+        return properties
+    else:
+        return []
+
+def calculate_distance(property1_id, property2_id):
+    # Implement distance calculation logic here
+    # This is a placeholder implementation
+    return random.uniform(0, 50)  # Returns a random distance between 0 and 50 miles
+
+def get_property_price(property_id):
+    # Implement price retrieval logic here
+    # This is a placeholder implementation
+    return random.uniform(100000, 1000000)  # Returns a random price between $100,000 and $1,000,000
 
 def get_access_token():
     url = "https://api.trepp.com/v2.0/oauth/token"

@@ -3,10 +3,22 @@ import requests
 import pandas as pd
 import os
 from datetime import date, timedelta
+from django.utils.dateparse import parse_date
 from .models import ProspectData
 import xgboost as xgb
+from .models import Prospect, SREOData
+import openai
+from django.conf import settings
+from django.utils import timezone
+from decimal import Decimal
+from django.apps import apps
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import datetime
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Define function to get access token
 def get_access_token():
@@ -45,38 +57,42 @@ def preprocess_dlq(row):
 def preprocess_data(file_path):
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
-    if file_path.endswith('.parquet'):
+    elif file_path.endswith('.parquet'):
         df = pd.read_parquet(file_path)
+    else:
+        raise ValueError("Unsupported file format")
+
     columns = ["amortTerm", "secltv", "originationdt", "noi", "ncf", "uweffectivegrossincome", "revenues", "curdlqcode", "impliedCapRateNOI", "curAmortType", "defeasStatus", "occRate", "curLoanBal","apprValPerSqFtOrUnit", "appValue", "modPrePayPenAmt", "prepayPenalty", "vacancyRate", "curBal", "originationYear", "curCpn", "relatedrecordscount", 'loanuniversepropid']
     columns = [col.lower() for col in columns]
-    final_df = df[columns]
-    final_df.fillna({"defeasstatus": 0 ,"modprepaypenamt": 0, "vacancyrate": 0, "longitude": -1, "latitude": -1, "occrate": -1, "curdlqcode":0}, inplace=True)
-    df = final_df.dropna()
-
+    df = df[columns].copy()
+    
+    df['defeasstatus'] = df['defeasstatus'].fillna(0)
+    df['modprepaypenamt'] = df['modprepaypenamt'].fillna(0)
+    df['vacancyrate'] = df['vacancyrate'].fillna(0)
+    df['occrate'] = df['occrate'].fillna(-1)
+    df['curdlqcode'] = df['curdlqcode'].fillna(0)
+    
+    df = df.dropna()
     propid = df['loanuniversepropid']
-    today = datetime.date.today()
-    try:
-        df['months_passed'] = df['originationdt'].apply(lambda x: today - datetime.datetime.strptime(x, "%m/%d/%y").date())
-    except:
-        df['months_passed'] = df['originationdt'].apply(lambda x: today - x)
-    df['months_passed'] = df['months_passed'].apply(lambda x: x.days // 30)
-    df.drop(['originationdt', 'modprepaypenamt', 'loanuniversepropid'], inplace=True, axis=1)
-    df['curdlqcode'] = df['curdlqcode'].apply(preprocess_dlq)
-    df['curdlqcode'] = df['curdlqcode'].apply(lambda x: float(x))
-    final_df = pd.get_dummies(df, columns=['defeasstatus'], drop_first=True)
-    if 'defeasstatus_P' not in final_df:
-        final_df['defeasstatus_P'] = [0 for row in range(len(final_df))]
-    if 'defeasstatus_N' not in final_df:
-        final_df['defeasstatus_N'] = [0 for row in range(len(final_df))]
-    if 'defeasstatus_F' not in final_df:
-        final_df['defeasstatus_F'] = [0 for row in range(len(final_df))]
-    final_df = final_df.astype(float)
-    print("final df: ", final_df)
-    return final_df, propid
+    
+    today = pd.to_datetime(datetime.date.today())  # Convert to pandas Timestamp
+    df['months_passed'] = (today - pd.to_datetime(df['originationdt'])).dt.days // 30
+    
+    df = df.drop(['originationdt', 'modprepaypenamt', 'loanuniversepropid'], axis=1)
+    df['curdlqcode'] = df['curdlqcode'].apply(preprocess_dlq).astype(float)
+    
+    df = pd.get_dummies(df, columns=['defeasstatus'], prefix='defeasstatus')
+    for status in ['F', 'N', 'P']:
+        if f'defeasstatus_{status}' not in df.columns:
+            df[f'defeasstatus_{status}'] = 0
+    
+    df = df.astype(float)
+    print("final df: ", df)
+    return df, propid
 
 # Get the model ready for predictions
 def get_model():
-    xgb_classifier = xgb.XGBClassifier()
+    xgb_classifier = xgb.XGBClassifier(enable_categorical=True)
     xgb_classifier.load_model('static/models/xgb_model.json')
     return xgb_classifier
 
@@ -97,11 +113,14 @@ def process_and_store_data():
 
     if data_file.endswith('.csv'):
         newdf = pd.read_csv(data_file)
-    if data_file.endswith('.parquet'):
+    elif data_file.endswith('.parquet'):
         newdf = pd.read_parquet(data_file)
+    else:
+        raise ValueError("Unsupported file format")
+
     columns_of_interest = ["propname", "city", "loanuniversepropid"]
     newdf = newdf[columns_of_interest]
-    filtered_df = newdf[newdf['loanuniversepropid'].isin(propid)]
+    filtered_df = newdf[newdf['loanuniversepropid'].isin(propid)].copy()
     filtered_df['predictions'] = predictions
 
     ProspectData.objects.all().delete()
@@ -152,3 +171,139 @@ def process_custom_data(data_upload_pk):
     data_upload.save()
 
 
+@shared_task
+def process_sreo_document(prospect_id):
+    Prospect = apps.get_model('prospect', 'Prospect')
+    SREOData = apps.get_model('prospect', 'SREOData')
+    
+    logger.info(f"Starting SREO document processing for prospect {prospect_id}")
+
+    try:
+        prospect = Prospect.objects.get(id=prospect_id)
+    except Prospect.DoesNotExist:
+        logger.error(f"Prospect with id {prospect_id} does not exist")
+        return
+
+    # Read the SREO document
+    try:
+        with prospect.sreo_document.open('r') as file:
+            sreo_content = file.read().decode('utf-8')
+    except Exception as e:
+        logger.error(f"Error reading SREO document for prospect {prospect_id}: {str(e)}")
+        return
+
+    # Use ChatGPT to extract information
+    openai.api_key = settings.OPENAI_API_KEY
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that extracts property information from SREO documents and returns it in JSON format."},
+                {"role": "user", "content": f"""
+                Extract the following information for each property in this SREO document:
+                - Property Name and/or Address
+                - Property Type
+                - Number of Units
+                - Acq. Date
+                - Acq. Cost
+                - Estimated Current Market Value
+                - Market Value Based
+                - Lender Name
+                - Contact Phone #
+                - Loan Number
+                - Estimated Current Loan Balance
+                - Gross Monthly Income
+                - Monthly Loan Payment
+                - Monthly Property Tax Amt.
+                - Average Monthly Expenses
+                - Monthly Cash Flow
+
+                Return the data as a JSON array of objects, where each object represents a property. Use 'N/A' for any missing values.
+                Here's the document content: {sreo_content}
+                """}
+            ]
+        )
+    except Exception as e:
+        logger.error(f"Error in OpenAI API call for prospect {prospect_id}: {str(e)}")
+        return
+
+    # Parse the ChatGPT response
+    try:
+        extracted_data = json.loads(response.choices[0].message['content'])
+    except json.JSONDecodeError:
+        logger.error(f"Error decoding JSON from OpenAI response for prospect {prospect_id}")
+        return
+
+    # Initialize geocoder
+    geolocator = Nominatim(user_agent="neuroprop")
+
+    # Process each property and prepare for bulk create
+    sreo_objects = []
+    for property_data in extracted_data:
+        address = property_data.get('Property Name and/or Address', 'N/A')
+        
+        # Geocode the address
+        try:
+            location = geolocator.geocode(address, timeout=10)
+            if location:
+                latitude = location.latitude
+                longitude = location.longitude
+            else:
+                latitude = None
+                longitude = None
+                logger.warning(f"No geocoding results found for address: {address}")
+        except (GeocoderTimedOut, GeocoderServiceError, GeocoderUnavailable) as e:
+            logger.warning(f"Geocoding error for address '{address}': {str(e)}")
+            latitude = None
+            longitude = None
+
+        # Parse number of units
+        try:
+            number_of_units = int(property_data.get('Number of Units', 0))
+        except ValueError:
+            number_of_units = 0
+            logger.warning(f"Invalid 'Number of Units' value for property: {address}")
+
+        # Prepare SREOData object
+        sreo_objects.append(SREOData(
+            prospect=prospect,
+            created_by=prospect.created_by,
+            property_name=address,
+            address=address,
+            property_type=property_data.get('Property Type', 'N/A'),
+            number_of_units=number_of_units,
+            acquisition_date=parse_date_with_timezone(property_data.get('Acq. Date', 'N/A')),
+            acquisition_cost=parse_decimal(property_data.get('Acq. Cost', 'N/A')),
+            estimated_current_market_value=parse_decimal(property_data.get('Estimated Current Market Value', 'N/A')),
+            market_value_based=property_data.get('Market Value Based', 'N/A'),
+            lender_name=property_data.get('Lender Name', 'N/A'),
+            contact_phone=property_data.get('Contact Phone #', 'N/A'),
+            loan_number=property_data.get('Loan Number', 'N/A'),
+            estimated_current_loan_balance=parse_decimal(property_data.get('Estimated Current Loan Balance', 'N/A')),
+            gross_monthly_income=parse_decimal(property_data.get('Gross Monthly Income', 'N/A')),
+            monthly_loan_payment=parse_decimal(property_data.get('Monthly Loan Payment', 'N/A')),
+            monthly_property_tax_amount=parse_decimal(property_data.get('Monthly Property Tax Amt.', 'N/A')),
+            average_monthly_expenses=parse_decimal(property_data.get('Average Monthly Expenses', 'N/A')),
+            monthly_cash_flow=parse_decimal(property_data.get('Monthly Cash Flow', 'N/A')),
+            latitude=latitude,
+            longitude=longitude
+        ))
+
+    # Bulk create SREOData objects
+    try:
+        SREOData.objects.bulk_create(sreo_objects)
+        logger.info(f"Completed SREO document processing for prospect {prospect_id}. Processed {len(sreo_objects)} properties.")
+    except Exception as e:
+        logger.error(f"Error bulk creating SREOData objects for prospect {prospect_id}: {str(e)}")
+
+def parse_date_with_timezone(date_string):
+    naive_date = parse_date(date_string)
+    if naive_date:
+        return timezone.make_aware(datetime.combine(naive_date, datetime.min.time()))
+    return None
+
+def parse_decimal(value):
+    try:
+        return Decimal(value.replace('$', '').replace(',', ''))
+    except:
+        return Decimal('0.00')

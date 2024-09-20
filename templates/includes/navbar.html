@@ -60,7 +60,7 @@
                     </div>
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item">
+                    <a href="{% url 'profile' %}" class="dropdown-item">
                         <i class="mdi mdi-account-circle me-1"></i>
                         <span>My Account</span>
                     </a>
@@ -77,13 +77,13 @@
                     </a>
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item">
+                    <a href="{% url 'support' %}" class="dropdown-item">
                         <i class="mdi mdi-lifebuoy me-1"></i>
                         <span>Support</span>
                     </a>
 
                     <!-- item-->
-                    <a href="javascript:void(0);" class="dropdown-item">
+                    <a href="{% url 'lock_screen' %}" class="dropdown-item">
                         <i class="mdi mdi-lock-outline me-1"></i>
                         <span>Lock Screen</span>
                     </a>
@@ -142,6 +142,14 @@
                         <li>
                             <a href="{% url 'custom_data_preds' %}">Upload Data</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'sreo_data_list' %}">SREO Data</a>
+                        </li>
+                        <li>
+                            <!-- Map -->
+                            <a class="nav-link" href="{% url 'map_list' %}">Map View</a>
+                        </li>
+
                     </ul>
                 </div>
             </li>

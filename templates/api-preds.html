@@ -29,6 +29,7 @@
                                 <th>City</th>
                                 <th>Loan Balance</th>
                                 <th>Likelihood</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -40,8 +41,30 @@
                                 <td>{{entry.data.loanuniversepropid}}</td>
                                 <td class="text-center">{% include 'includes/score-badge.html' with score=entry.data.predictions %}
                                 </td>
+                                <td>
+                                    <a href="{% url 'similar_properties' entry.data.loanuniversepropid %}" class="btn btn-sm btn-primary" target="_blank">Similar Properties</a>
+                                </td>
                             </tr>
                             {% endfor %}
+
+                            <div class="modal fade" id="similarPropertiesModal" tabindex="-1" role="dialog" aria-labelledby="similarPropertiesModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="similarPropertiesModalLabel">Similar Properties</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body" id="similarPropertiesModalBody">
+                                            <!-- Content will be dynamically inserted here -->
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </tbody>
 
                     </table>
@@ -53,4 +76,35 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.similar-properties-btn').on('click', function() {
+        var propertyId = $(this).data('property-id');
+        $.ajax({
+            url: "{% url 'get_similar_properties' %}",
+            data: { property_id: propertyId },
+            success: function(data) {
+                showSimilarPropertiesModal(data);
+            },
+            error: function() {
+                alert('Failed to fetch similar properties');
+            }
+        });
+    });
+
+    function showSimilarPropertiesModal(properties) {
+        var modalContent = '<table class="table"><thead><tr><th>Property Name</th><th>City</th><th>Loan Balance</th></tr></thead><tbody>';
+        properties.forEach(function(property) {
+            modalContent += '<tr><td>' + property.propname + '</td><td>' + property.city + '</td><td>' + property.curLoanBal + '</td></tr>';
+        });
+        modalContent += '</tbody></table>';
+
+        $('#similarPropertiesModalBody').html(modalContent);
+        $('#similarPropertiesModal').modal('show');
+    }
+});
+</script>
 {% endblock %}

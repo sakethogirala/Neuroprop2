@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Map View</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <select name="property_type" class="form-select">
+                                    <option value="">All Property Types</option>
+                                    {% for type in property_types %}
+                                        <option value="{{ type }}" {% if request.GET.property_type == type %}selected{% endif %}>{{ type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <input type="number" name="min_units" class="form-control" placeholder="Min Units" value="{{ request.GET.min_units }}">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <input type="number" name="max_units" class="form-control" placeholder="Max Units" value="{{ request.GET.max_units }}">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <input type="number" name="min_value" class="form-control" placeholder="Min Value" value="{{ request.GET.min_value }}">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <input type="number" name="max_value" class="form-control" placeholder="Max Value" value="{{ request.GET.max_value }}">
+                            </div>
+                            <div class="col-md-1 mb-2">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="map" style="height: 600px; width: 100%;"></div>
+
+                    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+                    <script>
+                        var mapData = JSON.parse('{{ map_data|escapejs }}');
+                        var map;
+
+                        function initMap() {
+                            map = new google.maps.Map(document.getElementById('map'), {
+                                center: {lat: 37.0902, lng: -95.7129},
+                                zoom: 4
+                            });
+                            plotMarkers();
+                        }
+
+                        function plotMarkers() {
+                            mapData.forEach(function(entry) {
+                                let color;
+                                if (entry.score > 80) {
+                                    color = 'green';
+                                } else if (entry.score > 50) {
+                                    color = 'yellow';
+                                } else {
+                                    color = 'red';
+                                }
+
+                                new google.maps.Marker({
+                                    position: {lat: entry.lat, lng: entry.lng},
+                                    map: map,
+                                    title: entry.name,
+                                    icon: {
+                                        path: google.maps.SymbolPath.CIRCLE,
+                                        scale: 10,
+                                        fillColor: color,
+                                        fillOpacity: 1,
+                                        strokeWeight: 1,
+                                        strokeColor: 'white'
+                                    }
+                                });
+                            });
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

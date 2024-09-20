@@ -10,17 +10,18 @@ from . import ACCOUNT
 from django.contrib.auth import update_session_auth_hash
 
 def signup(request):
-    form = SignUpForm()
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            request.session['django_timezone'] = request.POST.get('timezone')
-            account = form.save()
-            account.send_confirmation_email()
-            # account.save()
-            # login(request, account)
-            messages.success(request, "Please check your email to activate your account")
-            return redirect("index")
+            user = form.save(commit=False)
+            user.is_superuser = True
+            user.is_staff = True
+            user.save()
+            messages.success(request, "Account created successfully. You can now log in.")
+            return redirect("login")
+    else:
+        form = SignUpForm()
+    
     context = {
         "form": form,
         'timezones': ACCOUNT.common_timezones
@@ -81,3 +82,55 @@ def user_set_password(request, token):
         "form": form,
     }
     return render(request, "registration/user-set-password.html", context)
+
+# Profile view
+@login_required
+def profile(request):
+    return render(request, "account/profile.html")
+
+# Support view
+from django.core.mail import send_mail
+from django.conf import settings
+
+@login_required
+def support_view(request):
+    if request.method == 'POST':
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        user_email = request.user.email
+        
+        # Send email to support
+        send_mail(
+            f"Support Request: {subject}",
+            f"From: {user_email}\n\n{message}",
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.SUPPORT_EMAIL],
+            fail_silently=False,
+        )
+        
+        messages.success(request, "Your support request has been sent. We'll get back to you soon.")
+        return redirect('support')
+    
+    return render(request, 'account/support.html')
+
+
+# Add these new views
+
+@login_required
+def lock_screen(request):
+    request.session['is_locked'] = True
+    return render(request, 'account/lock_screen.html')
+
+@login_required
+def unlock_screen(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = authenticate(username=request.user.email, password=password)
+        if user is not None:
+            login(request, user)
+            request.session['is_locked'] = False
+            messages.success(request, "Screen unlocked successfully!")
+            return redirect('index')
+        else:
+            messages.error(request, "Invalid password. Please try again.")
+    return render(request, 'account/lock_screen.html')

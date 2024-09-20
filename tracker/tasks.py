@@ -2,6 +2,7 @@ from celery import shared_task
 import time
 from neuroprop.celery import app
 from django.conf import settings
+from django.utils import timezone
 import openai
 
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -76,17 +77,18 @@ from celery.exceptions import MaxRetriesExceededError
 
 @shared_task(bind=True)
 def get_openai_document_feedback_status(self, document_pk):
-    from .models import Document
-    from django.utils import timezone
+    import logging
+
+    logger = logging.getLogger(__name__)
 
     try:
         document = Document.objects.get(pk=document_pk)
         feedback = document.openai_get_result(client, document.openai_document_feedback_thread_id, document.openai_document_feedback_run_id)
-        print(feedback)
+        logger.info(f"Feedback received for document {document_pk}: {feedback}")
 
         if not feedback:
-            print("Result not ready, scheduling retry...")
-            self.retry(countdown=20, max_retries=10)
+            logger.warning(f"No feedback received for document {document_pk}. Attempt {self.request.retries + 1}")
+            raise self.retry(countdown=20)
         elif 'correct' in feedback and 'feedback' in feedback:
             # Process valid feedback
             document.smart_checked = True
@@ -100,31 +102,28 @@ def get_openai_document_feedback_status(self, document_pk):
             document.save()
             document.document_type.staff_notifications = True
             document.document_type.save()
+            logger.info(f"Document {document_pk} processed successfully")
         else:
-            # Handle invalid format or true error in data
-            message = "Feedback format invalid or missing expected keys."
-            # Common handler for scenarios where feedback is invalid or an error occurs
+            logger.error(f"Invalid feedback format for document {document_pk}: {feedback}")
             document.smart_checked = True
             document.status = "pending"
-            document.feedback = message
+            document.feedback = "Feedback format invalid or missing expected keys."
             document.save()
 
-    except MaxRetriesExceededError:
-        # Handle invalid format or true error in data
-        message = "Document could not be analyzed. Max Retries Attempted."
-        document.client_feedback = "Document could not be analyzed. Waiting for approval."
+    except self.MaxRetriesExceededError:
+        logger.error(f"Max retries exceeded for document {document_pk}")
         document.smart_checked = True
         document.status = "pending"
-        document.feedback = message
+        document.feedback = "Document could not be analyzed. Max retries attempted."
+        document.client_feedback = "Document could not be analyzed. Waiting for approval."
         document.save()
 
     except Exception as e:
-        print(f"An error occurred: {e}")
-        message = f"Document could not be analyzed. Error: {e}."
-        document.client_feedback = "Document could not be analyzed. Waiting for approval."
+        logger.exception(f"An error occurred while processing document {document_pk}: {str(e)}")
         document.smart_checked = True
         document.status = "pending"
-        document.feedback = message
+        document.feedback = f"Document could not be analyzed. Error: {str(e)}"
+        document.client_feedback = "Document could not be analyzed. Waiting for approval."
         document.save()
 
 @shared_task

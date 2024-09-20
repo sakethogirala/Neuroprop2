@@ -17,11 +17,17 @@
         </div>
     </div>
     <div class="row">
-         <div class="col-12">
+        <div class="col-12">
             <div class="progress mb-3">
-                <div class="progress-bar" role="progressbar" style="width: {{ prospect.get_document_progress_percentage }}%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ prospect.get_document_progress_percentage|floatformat }}%</div>
+                <div class="progress-bar" role="progressbar" 
+                     style="width: {{ prospect.get_document_progress_percentage }}%;" 
+                     aria-valuenow="{{ prospect.get_document_progress_percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    {{ prospect.get_document_progress_percentage|floatformat }}%
+                </div>
             </div>   
-         </div>                                                   
+        </div>
     </div>
     <div class="row">
         <div class="col-12 col-lg-8">

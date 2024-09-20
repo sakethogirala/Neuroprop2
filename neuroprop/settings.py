@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 import environ
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
+import logging
 
 def get_list(text):
     return [item.strip() for item in text.split(",")]
@@ -12,6 +15,8 @@ environ.Env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env("SECRET_KEY")
 
@@ -19,6 +24,17 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = get_list(env("ALLOWED_HOSTS"))
 
+SIGNUP_ACCESS_CODE = os.getenv('SIGNUP_ACCESS_CODE')
+
+TREPP_API_USERNAME = env("TREPP_API_USERNAME", default="sam@dim3nsion.co")
+TREPP_API_PASSWORD = env("TREPP_API_PASSWORD", default="Treppdata2023$")
+
+if not SIGNUP_ACCESS_CODE:
+    raise ImproperlyConfigured("SIGNUP_ACCESS_CODE environment variable is not set")
+
+GOOGLE_MAPS_API_KEY = 'AIzaSyBMZNsxqP3f8gzuum4bTtUGTo2IUV4it20'
+
+SUPPORT_EMAIL = 'sean@neuroprop.com'  
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -35,7 +51,7 @@ INSTALLED_APPS = [
     'market',
     'sync',
     'jsonify',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -149,13 +165,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 OPENAI_API_KEY = env("OPENAI_API_KEY")
-OPENAI_ASSISTANT_UNDERWRITE_ID = "asst_YhmyQJYZshkwKaEijpTOF2f6"
-OPENAI_ASSISTANT_FILE_CHECK_ID = "asst_HzSXUPou4D394UmM3Fpeq38R"
-OPENAI_ASSISTANT_MASTER_ID = "asst_dbwU14WFoTAPSW8d4n48iwKw"
+OPENAI_ASSISTANT_UNDERWRITE_ID = "asst_WOV9oHdjiS0zGbiPgBrXIVyn"
+OPENAI_ASSISTANT_FILE_CHECK_ID = "asst_5kPKg5hT7z4t3qJda2dpu1DL"
+OPENAI_ASSISTANT_MASTER_ID = "asst_DeuBJn5T8Qqqv61ptoDgHOsk"
 
-OPENAI_DOC_FEEDBACK_ID = "asst_dbwU14WFoTAPSW8d4n48iwKw"
-OPENAI_OUTREACH_ID = "asst_KDR1heIJLm3D6Gj5NFgW3Q7A"
-OPENAI_DOC_SORT_ID = "asst_AMj6DJJf0B528cr3edhgxcjG"
+OPENAI_DOC_FEEDBACK_ID = "asst_WWN8Bci3dz1aYj2QdEjENBnW"
+OPENAI_OUTREACH_ID = "asst_cavesOYRchqcdXq0BWSa4Nu7"
+OPENAI_DOC_SORT_ID = "asst_uVtUUVvCAB1TWU3Ebecu3QA5"
 # Celery
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

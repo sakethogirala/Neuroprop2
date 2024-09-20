@@ -45,7 +45,8 @@ class DOCUMENT:
         # Additional Supporting Documents
         ("Capital Improvement Records", "CapitalImprovements", "Details of recent and planned improvements."),
         ("Market Analysis Reports", "MarketAnalysis", "Assessing market conditions and hotel's position."),
-        ("Lease Agreements (If Applicable)", "LeaseAgreements", "For any leased space within the hotel.")
+        ("Lease Agreements (If Applicable)", "LeaseAgreements", "For any leased space within the hotel."),
+        ("SREO Document", "SREODocument", "Specialized Real Estate Operating Document"),
     ]
 
     SELF_STORAGE_DOCS = [
@@ -71,12 +72,14 @@ class DOCUMENT:
         ("Title Report", "TitleReport", "Ownership and liens."),
         ("Zoning and Compliance Certifications", "ZoningCompliance", "Regulatory compliance."),
         ("Operating Licenses and Permits", "OperatingLicenses", "Legal operation proof."),
+        
 
         # Additional Supporting Documents
         ("Capital Improvement Records", "CapitalImprovements", "Document renovations/improvements."),
         ("Market Analysis Reports", "MarketAnalysis", "Market conditions and competition."),
         ("Lease Abstracts", "LeaseAbstracts", "Summary of key lease terms."),
-        ("Management Agreements", "ManagementAgreements", "Details of facility management.")
+        ("Management Agreements", "ManagementAgreements", "Details of facility management."),
+        ("SREO Document", "SREODocument", "Specialized Real Estate Operating Document"),
     ]
 
     MULTI_FAMILY_DOCS = [
@@ -129,5 +132,6 @@ class DOCUMENT:
         
         # Additional Documents
         ("Legal Issues Information", "LegalIssues", "Details on any ongoing or past legal issues."),
-        ("Other Stakeholders Information", "StakeholdersInfo", "Information on other involved parties, if applicable.")
+        ("Other Stakeholders Information", "StakeholdersInfo", "Information on other involved parties, if applicable."),
+        ("SREO Document", "SREODocument", "Specialized Real Estate Operating Document"),
     ]

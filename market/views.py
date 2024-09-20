@@ -23,6 +23,24 @@ def lender_map(request):
     return render(request, "market/lender-map.html", context)
 
 @login_required
+def map_list(request):
+    lenders = Lender.objects.all()
+    map_data = [
+        {
+            'name': lender.title,
+            'lat': lender.data.get('latitude'),  # Assuming latitude is stored in lender data
+            'lng': lender.data.get('longitude'),  # Assuming longitude is stored in lender data
+            'score': lender.data.get('predictions')  # Assuming predictions are stored in lender data
+        }
+        for lender in lenders
+    ]
+    context = {
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        'map_data': map_data,
+    }
+    return render(request, "prospect/map_list.html", context)
+
+@login_required
 def lenders(request):
     query = Lender.objects.all()
     context = {

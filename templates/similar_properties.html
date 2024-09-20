@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title">Similar Properties for {{ property_id }}</h4>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <input type="number" name="proximity" class="form-control" placeholder="Max Distance (miles)" value="{{ proximity }}">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="min_price" class="form-control" placeholder="Min Price" value="{{ min_price }}">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="max_price" class="form-control" placeholder="Max Price" value="{{ max_price }}">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <table class="table table-centered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Address</th>
+                                <th>Price</th>
+                                <th>Distance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for property in similar_properties %}
+                            <tr>
+                                <td>{{ property.propname }}</td>
+                                <td>{{ property.address }}</td>
+                                <td>${{ property.price|floatformat:2 }}</td>
+                                <td>{{ property.distance|floatformat:2 }} miles</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

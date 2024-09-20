@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title mb-3">{{ user.name }}</h4>
+                    <div class="text-center">
+                        <p class="text-muted font-13"><strong>Last login:</strong> <span class="ms-2">
+                            {% timezone "America/New_York" %}
+                                {{ user.last_login|date:"F j, Y, g:i a" }}
+                            {% endtimezone %}
+                        </span></p>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-start">
+                        <p class="text-muted"><strong>Email:</strong> <span class="ms-2">{{ user.email }}</span></p>
+                        <p class="text-muted"><strong>Account Type:</strong> <span class="ms-2">{{ user.get_account_type_display }}</span></p>
+                        <p class="text-muted"><strong>Date Joined:</strong> <span class="ms-2">{{ user.date_joined|date:"F j, Y" }}</span></p>
+                    </div>
+
+                    <hr>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_change' %}" class="btn btn-primary btn-sm">Change Password</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-tabs nav-bordered mb-3">
+                        <li class="nav-item">
+                            <a href="#activity" data-bs-toggle="tab" aria-expanded="true" class="nav-link active">
+                                Activity
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="activity">
+                            <h5 class="mb-3">Recent Activity</h5>
+
+                            <div class="timeline-alt pb-0">
+                                <!-- You can add recent activities here -->
+                                <div class="timeline-item">
+                                    <i class="mdi mdi-circle bg-info-lighten text-info timeline-icon"></i>
+                                    <div class="timeline-item-info">
+                                        <h5 class="mt-0 mb-1">Profile Updated</h5>
+                                        <p class="font-14">You updated your profile information <span class="fw-bold">1 day ago</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Add more activity items as needed -->
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

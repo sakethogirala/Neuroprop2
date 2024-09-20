@@ -3,6 +3,7 @@ from .views import *
 
 urlpatterns = [
     path("lender-map/", lender_map, name="lender-map"),
+    path("map-list/", map_list, name="map_list"),
     path("lenders/", lenders, name="lenders"),
     path("lenders/search/", lenders_search, name="lenders_search"),
     path("create-lender/", create_lender, name="create_lender"),

@@ -3,7 +3,6 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/tracker.css' %}">
-
 {% endblock %}
 
 {% block content %}
@@ -22,7 +21,6 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h3 class="mt-0">{{ prospect.name }}</h3>
-                        <!-- project title-->
                     </div>
                     <div class="badge badge-lg text-bg-{{ prospect.get_progress_class }} mb-3">
                         {{ prospect.get_status_display }}</div>
@@ -66,55 +64,25 @@
                             </div>
                         </div>
                     </div>
-
                 </div> <!-- end card-body-->
-
             </div> <!-- end card-->
-
-            <!-- end card-->
         </div>
     </div>
-    <!-- <div class="row justify-content-center">
-        <div class="col-lg-7 col-md-10 col-sm-11">
-
-            <div class="horizontal-steps mt-4 mb-4 pb-5" id="tooltip-container">
-                <div class="horizontal-steps-content">
-                    <div class="step-item {% if object.status == 'draft' %}current{% endif %}">
-                        <span>Draft</span>
-                    </div>
-                    <div class="step-item {% if object.status == 'in-progress' %}current{% endif %}">
-                        <span>In Progress</span>
-                    </div>
-                    <div class="step-item {% if object.status == 'correcting' %}current{% endif %}">
-                        <span>Correcting</span>
-                    </div>
-                    <div class="step-item {% if object.status == 'completed' %}current{% endif %}">
-                        <span>Completed</span>
-                    </div>
-                </div>
-
-                <div class="process-line" style="width: {{ object.get_progress_percentage }}%;"></div>
-            </div>
-        </div>
-    </div> -->
 
     <div class="row">
         <div class="col-xxl-8 col-xl-7">
             <div class="card d-block">
-                    <div class="card-body">
-                        <div class="d-flex card-header justify-content-between align-items-center">
-                            <h4 class="header-title">{{ current_document_type.type }}</h4>
-                            <div class="dropdown">
-                                <div class="badge badge-lg text-bg-{{ current_document_type.get_status_class }}">
-                                    {{ current_document_type.get_status_display }}
-                                </div>
+                <div class="card-body">
+                    <div class="d-flex card-header justify-content-between align-items-center">
+                        <h4 class="header-title">{{ current_document_type.type }}</h4>
+                        <div class="dropdown">
+                            <div class="badge badge-lg text-bg-{{ current_document_type.get_status_class }}">
+                                {{ current_document_type.get_status_display }}
                             </div>
-                            
-                            
                         </div>
+                    </div>
  
-                        
-                        <div endpoint="{% url 'poll_openai_document_check' %}" id="document-upload">
+                    <div endpoint="{% url 'poll_openai_document_check' %}" id="document-upload">
                         {% include 'includes/document-upload.html' %}
                     </div>
                     <div style="display: none;" id="document-loading">
@@ -123,6 +91,13 @@
                             <div class="fw-bold mt-2" id="document-loading-text">Uploading file. Do not reload page!</div>
                         </div>
                     </div>
+                    
+                    {% if current_document_type.type == "SREO Document" %}
+                    <div class="mb-3">
+                        <label for="sreo-upload" class="form-label">Upload SREO Document</label>
+                        <input class="form-control" type="file" id="sreo-upload" name="file" accept=".pdf,.doc,.docx">
+                    </div>
+                    {% endif %}
 
                     <div>
                         {% for document in current_document_type.documents.all %}
@@ -155,53 +130,45 @@
                                         <div id="document-loading" class="col-auto" style="display: none;">
                                             <div class="d-flex justify-content-center">
                                                 <div class="spinner-border text-primary" role="status"></div>
-                                                </div>
                                             </div>
+                                        </div>
                                         <div class="col ps-0">
                                             <a href="{% url 'download-document' %}?document_uid={{ document.uid }}" class="text-muted fw-bold" data-dz-name>{{ document.name }}</a>
                                             <span class="mdi mdi-download"></span>
                                         </div>
                                         <div class="col-auto">
-                                            <!-- Button -->
                                             <a onclick="return confirm('Are you sure you want to delete this?')" id="delete-document-link" href="{% url 'delete-document' document.uid %}" class="btn btn-link btn-lg text-muted" data-dz-remove>
                                                 <i class="ri-close-line"></i>
                                             </a>
                                         </div>
-                                        
                                     </div>
                                     <div class="d-flex flex-column">
-                                    <div style="display: none;" id="loading-warning" class="text-muted" id="">Do not leave page while file is being analyzed.</div>
-                                {% if document.client_feedback %}
-                                <h6 class="mb-0">Client Feedback</h6>
-                                    <div class="my-1 text-muted">{{ document.client_feedback|safe }}</div>
-                                    {% endif %}
-                                    {% if document.status == 'rejected' %}
-                                    <div class="mb-1">
-                                        <a onclick="return confirm('Are you sure you want to override this?')" href="{% url 'override-document-check' document.uid %}" class="fw-bold float-end">Disagree?</a>
+                                        <div style="display: none;" id="loading-warning" class="text-muted">Do not leave page while file is being analyzed.</div>
+                                        {% if document.client_feedback %}
+                                        <h6 class="mb-0">Client Feedback</h6>
+                                        <div class="my-1 text-muted">{{ document.client_feedback|safe }}</div>
+                                        {% endif %}
+                                        {% if document.status == 'rejected' %}
+                                        <div class="mb-1">
+                                            <a onclick="return confirm('Are you sure you want to override this?')" href="{% url 'override-document-check' document.uid %}" class="fw-bold float-end">Disagree?</a>
+                                        </div>
+                                        {% endif %}
+                                        {% if document.overridden %}
+                                        <div class="mb-1">
+                                            <div class="float-end fw-bold mt-1">Approved by user</div>
+                                        </div>
+                                        {% endif %}
                                     </div>
-                                    {% endif %}
-                                    {% if document.overridden %}
-                                    <div class="mb-1">
-                                    <div class="float-end fw-bold mt-1">Approved by user</div>
-                                    </div>
-                                    {% endif %}
-                    
-                            </div>
-                                    
                                 </div>
-                                
                             </div>
                         </div>
                         {% endfor %}
                     </div>  
                 </div>
             </div> <!-- end card-->
-
-            <!-- end card-->
         </div> <!-- end col -->
 
         <div class="col-xxl-4 col-xl-5">
-
             <div class="card">
                 <div class="card-body">
                     <h4 class="header-title">Documents</h4>
@@ -231,12 +198,10 @@
             </div>
         </div>
     </div>
-
 </div>
 
 {% include 'includes/send-to-user-modal.html' %}
 {% include 'includes/send-client-feedback-modal.html' %}
-
 {% endblock %}
 
 {% block js %}
@@ -246,7 +211,6 @@
     for(let i = 0; i < document_type_btns.length; i++){
         document_type_btns.addEventListener("click", )
     }
-
 </script>
 <script src="{% static 'js/upload-document.js' %}"></script>
 <script src="{% static 'js/dropzone.js' %}"></script>
@@ -275,15 +239,12 @@
         acceptedFiles: "application/pdf, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv"
          });
 
-
         dropzone.on("sending", function(file, xhr, formData) {
             document.getElementById("document-upload").style.display = "none";
             document.getElementById("document-loading").style.display = "block";
             formData.append("document_type_pk", "{{ current_document_type.pk }}");
-        
         });
         dropzone.on("success", function(file, response) {
-        // Refresh the page
             console.log(file);
             console.log(response)
             if(response.status == "success"){
